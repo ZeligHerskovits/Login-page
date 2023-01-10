@@ -188,8 +188,6 @@ app.get("/me", async (req, res) => {
 });
 
 
-
-
 function checkToken(req, res, next) {
 
   let token;

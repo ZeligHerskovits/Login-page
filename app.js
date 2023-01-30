@@ -4,15 +4,14 @@ const dotenv = require("dotenv");
 dotenv.config({ path: './config/config.env' });
 const cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser')
-//const http = require('http');
 const { errorHandler } = require('./utils/middleware');
 const app = express();
-//const server = http.createServer(app);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }))
-
+//const http = require('http');
+//const server = http.createServer(app);
 
 
 //app.use('/', (req, res) => res.status(200).send('Server is running'));

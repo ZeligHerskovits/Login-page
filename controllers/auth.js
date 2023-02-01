@@ -28,7 +28,7 @@ exports.register = (async (req, res, next) => {
 
 exports.login = (async (req, res, next) => {
    
-    let error = checkFields(req.body, ['email','password','name'], ['email','password']);
+    let error = checkFields(req.body, ['email','password'], ['email','password']);
     if (error) return next(error);
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password')

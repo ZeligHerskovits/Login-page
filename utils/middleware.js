@@ -20,7 +20,6 @@ exports.errorHandler = (err, req, res, next) => {
     if (typeof err === 'string') {
         err = { message: err };
     }
-
     //var json = JSON.stringify(err);
     if (err.message === "invalid signature") {
         err.message = err.message.replace("signature", "token");
@@ -47,10 +46,9 @@ exports.checkFields = (fields, allowedFields, requiredFields) => {
     }
 
     if (allowedFields) {
-        const goodFields = allowedFields;
-        let badFields = [];
-        badFields = Object.keys(fields).filter((e) => !goodFields.includes(e));
 
+        const goodFields = allowedFields;
+        let badFields = Object.keys(fields).filter((e) => !goodFields.includes(e));
         if (badFields.length > 0) {
 
             // const message = { field: badFields[0], message: 'unrecognized field name' };
@@ -73,15 +71,14 @@ exports.checkFields = (fields, allowedFields, requiredFields) => {
     }
 
     if (requiredFields) {
-        let missingFields = [];
-        missingFields = requiredFields.filter((e)=> !Object.keys(fields).includes(e));
+
+        let missingFields = requiredFields.filter((e) => !Object.keys(fields).includes(e));
         if (missingFields.length > 0) {
             const message = { field: missingFields[0], message: 'is required' };
             const error = new Error(message);
             error.message = message
             error.status = 400;
             return error;
-
         }
     }
 };

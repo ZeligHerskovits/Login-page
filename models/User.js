@@ -29,10 +29,15 @@ const UserSchema = new mongoose.Schema(
             select: false,
         },
         lastLogOut: Date,
-        forcedLogOut: Date,
         verified: { type: Boolean, default: false }
     },
 
+    {
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true },
+        timestamps: true,
+        selectPopulatedPaths: false,
+    }
 );
 
 UserSchema.methods.getSignedJwtToken = function () {

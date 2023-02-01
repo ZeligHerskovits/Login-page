@@ -4,8 +4,12 @@ const Token = require('../models/Token');
 const crypto = require("crypto");
 const dotenv = require("dotenv");
 dotenv.config({ path: './config/config.env' });
+const { checkFields } = require('../utils/middleware');
 
 exports.register = (async (req, res, next) => {
+
+    let error = checkFields(req.body, ['email','password','firstName',,'lastName'], ['email','password','firstName',,'lastName']);
+    if (error) return next(error);
     let user = await User.findOne({ email: req.body.email })
     if (user) return next(new Error('user already exist'));
 
@@ -23,6 +27,9 @@ exports.register = (async (req, res, next) => {
 });
 
 exports.login = (async (req, res, next) => {
+   
+    let error = checkFields(req.body, ['email','password','name'], ['email','password']);
+    if (error) return next(error);
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password')
     if (!user) return next(new Error('nvalid email'))

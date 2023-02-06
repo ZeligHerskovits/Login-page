@@ -7,9 +7,9 @@ dotenv.config({ path: './config/config.env' });
 const { checkFields } = require('../utils/middleware');
 
 exports.register = (async (req, res, next) => {
-
-    let error = checkFields(req.body, ['email','password','firstName',,'lastName'], ['email','password','firstName',,'lastName']);
-    if (error) return next(error);
+    //try it out - and make sure frontend work - and format by middleware.js
+    let fields = checkFields(req.body, ['email', 'password', 'firstName', 'lastName'], ['email', 'password', 'firstName', 'lastName']);
+    if (fields instanceof Error) return next(fields);
     let user = await User.findOne({ email: req.body.email })
     if (user) return next(new Error('user already exist'));
 
@@ -27,10 +27,10 @@ exports.register = (async (req, res, next) => {
 });
 
 exports.login = (async (req, res, next) => {
-   
-    let error = checkFields(req.body, ['email','password'], ['email','password']);
-    if (error) return next(error);
-    const { email, password } = req.body;
+
+    let fields = checkFields(req.body, ['email', 'password'], ['email', 'password']);
+    if (fields instanceof Error) return next(fields);
+    const { email, password } = fields;
     const user = await User.findOne({ email }).select('+password')
     if (!user) return next(new Error('nvalid email'))
 
@@ -64,4 +64,3 @@ exports.getUser = (async (req, res) => {
     if (!user) return next(new Error("no user found"));
     res.status(200).send(user);
 });
-

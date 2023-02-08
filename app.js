@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 dotenv.config({ path: './config/config.env' });
 const cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser')
-const { errorHandler } = require('./utils/middleware');
+const { errorHandler } = require('./middleware/errorHandler');
 const app = express();
 app.use(express.json());
 app.use(express.text());
@@ -17,7 +17,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 //app.use('/', (req, res) => res.status(200).send('Server is running'));
 //server.listen(PORT, console.log(`Server running on port 3000`));
-mongoose.connect('mongodb://localhost/forLogin', { useNewUrlParser: true })
+mongoose.connect('mongodb://localhost/loginPage', { useNewUrlParser: true })
   .then(() => console.log('connected to MongoDB...'))
   .catch(err => console.err('Could not connect to mongoDB', err))
 

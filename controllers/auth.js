@@ -1,17 +1,18 @@
+const {ErrorResponse, MissingRequiredError, NotFoundError} = require ('../utils/errors')
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const Token = require('../models/Token');
 const crypto = require("crypto");
 const dotenv = require("dotenv");
 dotenv.config({ path: './config/config.env' });
-const { checkFields } = require('../utils/middleware');
+const { checkFields } = require('../middleware/checkFields');
 
 exports.register = (async (req, res, next) => {
-    //try it out - and make sure frontend work - and format by middleware.js
-    let fields = checkFields(req.body, ['email', 'password', 'firstName', 'lastName'], ['email', 'password', 'firstName', 'lastName']);
+
+    let fields = checkFields(req.body, ['email', 'password', 'firstName', 'lastName', 'phoneNumber'], ['email', 'password', 'firstName', 'lastName', 'phoneNumber']);
     if (fields instanceof Error) return next(fields);
     let user = await User.findOne({ email: req.body.email })
-    if (user) return next(new Error('user already exist'));
+    if (user) return next(new ErrorResponse('user already exist', 400));
 
     user = await User.create({
         email: req.body.email, password: req.body.password, firstName: req.body.firstName, lastName: req.body.lastName
@@ -32,10 +33,10 @@ exports.login = (async (req, res, next) => {
     if (fields instanceof Error) return next(fields);
     const { email, password } = fields;
     const user = await User.findOne({ email }).select('+password')
-    if (!user) return next(new Error('nvalid email'))
+    if (!user) return next(new ErrorResponse('Invalid email', 400))
 
     const isMatch = bcrypt.compare(password, user.password);
-    if (!isMatch) return next(new Error('Invalid password'))
+    if (!isMatch) return next(new ErrorResponse('Invalid password', 400))
 
     const token = user.getSignedJwtToken();
 
@@ -59,8 +60,8 @@ exports.logout = (async (req, res, next) => {
     // res.status(200).cookie('token', '', options).end();
 });
 
-exports.getUser = (async (req, res) => {
+exports.getUser = (async (req, res, next) => {
     const user = await User.findById(req.user.user_id)
-    if (!user) return next(new Error("no user found"));
+    if (!user) return next(new NotFoundError("User", 400));
     res.status(200).send(user);
 });

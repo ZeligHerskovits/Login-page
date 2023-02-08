@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const dotenv = require("dotenv");
 dotenv.config({ path: './config/config.env' });
-const { checkToken } = require('../utils/middleware')
+const { checkToken } = require('../middleware/auth')
 
 const {
     login,

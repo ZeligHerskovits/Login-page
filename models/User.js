@@ -32,8 +32,23 @@ const UserSchema = new mongoose.Schema(
             type: String,
             select: false,
         },
-        lastLogOut: Date,
-        verified: { type: Boolean, default: false }
+        verified: { type: Boolean, default: false },
+        //we need to take out this customer 
+        customer: {
+            type: mongoose.Types.ObjectId,
+            ref: 'Customer',
+            required: true,
+          },
+        refToRole: {
+            type: mongoose.Types.ObjectId,
+            required: true,
+            refPath: 'role',
+        },
+        role: {
+            type: String,
+            enum: ['Customer', 'Dispatcher', 'Driver'],
+            default: 'Customer',
+        },
     },
 
     {
@@ -44,6 +59,15 @@ const UserSchema = new mongoose.Schema(
     }
 );
 
+UserSchema.virtual('roleObject', {
+    ref: function () {
+      return this.role;
+    },
+    localField: 'refToRole',
+    foreignField: '_id',
+    justOne: true,
+  });  
+  
 UserSchema.methods.getSignedJwtToken = function () {
     const payload = { user_id: this._id };
 

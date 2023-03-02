@@ -1,1 +1,2 @@
-# Just a simple Login-page
+# First I started to make just a simple Login-page just register, login, logout  
+# when I finished I start adding mush more things anything and everything just to figure out, and play around with code 

@@ -11,10 +11,17 @@ const {
     getUser
 } = require('../controllers/auth');
 
+const {
+    createCustomer
+} = require('../controllers/customers');
+
 //auth
-router.get('/auth/me', checkToken, getUser);
-router.post('/auth/logout', checkToken, logout);
-router.post('/auth/login', login);
 router.post('/auth/register', register);
+router.post('/auth/login', login);
+router.post('/auth/logout', checkToken, logout);
+router.get('/auth/me', checkToken, getUser);
+
+//customer
+//router.post('/customer', checkToken, createCustomer)
 
 module.exports = router;

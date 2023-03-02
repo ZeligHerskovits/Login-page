@@ -1,17 +1,26 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 exports.checkToken = (async (req, res, next) => {
     try {
         const token = req.cookies.token;
-        if (!token) throw new Error('Pls enter a token')
+        if (!token) throw new Error('You need to enter a token')
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        req.user = await decodeFunction(token);
         next();
     } catch (err) {
-        console.log('err.messssage......', err.message, 'err.stack......', err.stack)
         next(err);
     }
     return req.user;
 });
+
+async function decodeFunction(token) {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.user_id).populate('refToRole').populate('customer').populate('roleObject');
+    if (!user) {
+        throw 'no user found';
+    }
+    return user;
+}
 

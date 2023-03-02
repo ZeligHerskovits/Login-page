@@ -114,3 +114,4 @@ exports.getUser = (async (req, res, next) => {
 // diff from refToRole and roleObject ? refToRolewe need to fill out in order to populate vs roleObject we dont need to fill out in order to populate why ?
 // when we log in the check for password if its correct is still not working 
 // still getting this error UnhandledPromiseRejectionWarning: TypeError: Cannot read property 'call' of undefined
+// still need to connect FE to BE

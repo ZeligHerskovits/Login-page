@@ -2,26 +2,17 @@ const mongoose = require('mongoose');
 
 const TripSchema = new mongoose.Schema(
     {
-        // refToCreatedBy: {
-        //   type: mongoose.Types.ObjectId,
-        //   required: true,
-        //   refPath: 'createdByUserRole',
-        // },
-        // customerNotified: Boolean,
-        // createdByUserRole: {
-        //   type: String,
-        //   enum: ['Customer', 'Dispatcher'],
-        //   required: true,
-        // },
-        timeline: [
-            {
-                timestamp: { type: Date, default: Date.now },
-                userid: { type: mongoose.Types.ObjectId, ref: 'user' },
-                userrole: { type: String, default: 'Dispatcher' },
-                updates: [{ field: String, value: String }],
-                event: String,
-            },
-        ],
+        refToCreatedBy: {
+            type: mongoose.Types.ObjectId,
+            required: true,
+            refPath: 'createdByUserRole',
+        },
+        customerNotified: Boolean,
+        createdByUserRole: {
+            type: String,
+            enum: ['Customer', 'Dispatcher'],
+            required: true,
+        },
         driver: {
             type: mongoose.Types.ObjectId,
             ref: 'Driver',
@@ -39,8 +30,8 @@ const TripSchema = new mongoose.Schema(
         completedTime: { type: Date },
         pickupName: String,
         dropoffName: String,
-        pickupPhone: PhoneField,
-        dropoffPhone: PhoneField,
+        pickupPhone: Number,
+        dropoffPhone: Number,
         customer: {
             type: mongoose.Types.ObjectId,
             ref: 'Customer',
@@ -62,7 +53,16 @@ const TripSchema = new mongoose.Schema(
             type: String,
             enum: ['normal', 'rush', 'urgent'],
             default: 'normal',
-        }
+        },
+        timeline: [
+            {
+                timestamp: { type: Date, default: Date.now },
+                userid: { type: mongoose.Types.ObjectId, ref: 'user' },
+                userrole: { type: String, default: 'Dispatcher' },
+                updates: [{ field: String, value: String }],
+                event: String,
+            },
+        ]
     },
     {
         toJSON: { virtuals: true },

@@ -15,10 +15,11 @@ class MissingRequiredError extends ErrorResponse {
 
 class NotFoundError extends ErrorResponse {
   constructor(notFoundResource, status) {
-    super(notFoundResource, status ?? 404); //notFoundResource + " " + "not found", status ?? 404
+    super(`${notFoundResource} not found`, status ?? 404);
+    // const message = notFoundResource + " " + "not found"
+    // super(JSON.stringify(message), status ?? 404); 
   }
 }
-
 
 exports.ErrorResponse = ErrorResponse;
 exports.NotFoundError = NotFoundError;

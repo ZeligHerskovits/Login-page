@@ -1,2 +1,4 @@
 # First I started to make just a simple Login-page just register, login, logout  
-# when I finished I start adding mush more things anything and everything just to figure out, and play around with code 
+# when I finished I start adding much more things anything and everything  
+# (I decide to make it something like a Delivering company who has customers, drivers and trips to deliver packages etc.)
+# just to figure out and play around with code to go deeper and deeper 

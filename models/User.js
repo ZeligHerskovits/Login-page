@@ -33,12 +33,12 @@ const UserSchema = new mongoose.Schema(
             select: false,
         },
         verified: { type: Boolean, default: false },
-        //we need to take out this customer 
+        // I need to remove this customer 
         customer: {
             type: mongoose.Types.ObjectId,
             ref: 'Customer',
-            required: true,
-          },
+            //required: true,
+        },
         refToRole: {
             type: mongoose.Types.ObjectId,
             required: true,
@@ -61,13 +61,13 @@ const UserSchema = new mongoose.Schema(
 
 UserSchema.virtual('roleObject', {
     ref: function () {
-      return this.role;
+        return this.role;
     },
     localField: 'refToRole',
     foreignField: '_id',
     justOne: true,
-  });  
-  
+});
+
 UserSchema.methods.getSignedJwtToken = function () {
     const payload = { user_id: this._id };
 

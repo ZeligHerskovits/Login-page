@@ -3,14 +3,14 @@ const mongoose = require('mongoose');
 const dotenv = require("dotenv");
 dotenv.config({ path: './config/config.env' });
 const cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
 const { errorHandler } = require('./middleware/errorHandler');
 const app = express();
 app.use(express.json());
 app.use(express.text());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: true }));
 //const http = require('http');
 //const server = http.createServer(app);
 
@@ -23,6 +23,7 @@ mongoose.connect('mongodb://localhost/loginPage', { useNewUrlParser: true })
 
 const router = require('./routes');
 app.use(router);
+app.use('/', (req, res) => res.status(200).send('Server is running'));
 
 app.use(errorHandler);
 

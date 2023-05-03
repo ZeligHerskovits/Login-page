@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { fullName } = require('../utils/fullName');
+//const { fullName } = require('../utils/fullName');
 
 const CustomerSchema = new mongoose.Schema(
     {
@@ -10,15 +10,12 @@ const CustomerSchema = new mongoose.Schema(
         },
         firstName: String,
         lastName: String,
+        companyName: String,
         phoneNumber: {
             type: String,
         },
-        password: {
-            type: String,
-            select: false,
-        },
         verified: { type: Boolean, default: false },
-        // we need to take out this role
+        // I need to remove this role
         role: {
             type: String,
             default: 'Customer'
@@ -32,7 +29,7 @@ const CustomerSchema = new mongoose.Schema(
         selectPopulatedPaths: false,
     },
 
-    { strict: true }
+    // { strict: true }
 );
 
 // CustomerSchema.virtual('addresses', {
@@ -47,9 +44,11 @@ CustomerSchema.virtual('userObject', {
     foreignField: 'refToRole',
     ref: 'User',
     justOne: true,
-  });
+});
 
-CustomerSchema.virtual('fullName').get(fullName);
+//CustomerSchema.virtual('fullName').get(fullName);
 
 const Customer = mongoose.model('Customer', CustomerSchema);
 module.exports = Customer;
+
+

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const {fullName}= require('../utils/fullName');
+const { fullName } = require('../utils/fullName');
 
 const DriverSchema = new mongoose.Schema(
   {
@@ -9,7 +9,16 @@ const DriverSchema = new mongoose.Schema(
     lastName: {
       type: String,
     },
+    email: {
+      unique: true,
+      type: String,
+      lowercase: true,
+    },
+    phoneNumber: {
+      type: String,
+    }
   },
+
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
@@ -25,6 +34,6 @@ DriverSchema.virtual('userObject', {
   justOne: true,
 });
 
-DriverSchema.virtual('fullName').get(fullName);
+//DriverSchema.virtual('fullName').get(fullName);
 
 module.exports = mongoose.model('Driver', DriverSchema);

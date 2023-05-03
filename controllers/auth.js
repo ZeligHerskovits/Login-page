@@ -1,26 +1,24 @@
-const { ErrorResponse, MissingRequiredError, NotFoundError } = require('../utils/errors')
+const { ErrorResponse, MissingRequiredError, NotFoundError } = require('../utils/errors');
 const User = require('../models/User');
-const bcrypt = require('bcrypt');
+//const bcrypt = require('bcrypt');
 const Token = require('../models/Token');
 const crypto = require("crypto");
 const dotenv = require("dotenv");
 dotenv.config({ path: './config/config.env' });
 const { checkFields } = require('../middleware/checkFields');
-const { insertCustomer } = require('../controllers/customers')
+const { insertOrUpdateCustomer } = require('../controllers/customers');
 const { Error } = require('mongoose');
 const Customer = require('../models/Customer');
 
+// POST /auth/register
+// CREATE new user and customer
 exports.register = (async (req, res, next) => {
+   
+   //const a = await Customer.deleteMany({ firstName: { $nin: ["zelig", "zelig2", "zelig3", "zelig4"] } });
     try {
-        const customer = await insertCustomer({
-            ...req.body
-        }, next)
-
-        let allowedFields = ['email', 'password', 'firstName', 'lastName', 'phoneNumber']
-        let requiredFields = ['email', 'password', 'firstName', 'lastName', 'phoneNumber']
-
-        let fields = checkFields(req.body, allowedFields, requiredFields);
-        if (fields instanceof Error) return next(fields);
+        // if (fields instanceof MissingRequiredError || fields instanceof ErrorResponse)throw fields//throw fields;
+        //return next(new ErrorResponse(fields, 400));
+        const customer = await insertOrUpdateCustomer(req);
 
         const user = await User.create({
             firstName: req.body.firstName,
@@ -33,16 +31,17 @@ exports.register = (async (req, res, next) => {
             customer: customer._id
         });
         customer.userObject = user
-        const c = await Customer.findOne({ email: req.body.email }).populate('userObject')
-        const d = c.userObject._doc.role
-        const q = c.userObject._id
-        const r = d.role
-        const user2 = await User.findOne({ email: req.body.email }).populate('roleObject')
-        const b = user2.roleObject._id
-        const z = user2.roleObject._doc.phoneNumber
 
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
+        const c = await Customer.findOne({ email: req.body.email }).populate('userObject');
+        const a = c.userObject._doc.role
+        const b = c.userObject._id
+        const d = a.role
+        const user2 = await User.findOne({ email: req.body.email }).populate('roleObject');//roleObject we dont need to complete it with data in order to populate it the question is why ?
+        const e = user2.roleObject._id
+        const f = user2.roleObject._doc.phoneNumber
+
+        // const salt = await bcrypt.genSalt(10);
+        // user.password = await bcrypt.hash(user.password, salt);
 
         const token = crypto.randomBytes(32).toString("hex");
         await Token.create({ token: token, user: user._id });
@@ -54,22 +53,24 @@ exports.register = (async (req, res, next) => {
         //     return next(new ErrorResponse('Customer with this id already exists', 400));
         // } else {
         //return next( new Error(`Error: ${e.message}   errorCode: ${e.code }`));
-        console.log(e.stack)
+        console.log(e.stack);
         return next(new ErrorResponse(e.message, 400));
         //}
     }
 });
 
+// POST /auth/login
+// LOGIN
 exports.login = (async (req, res, next) => {
 
     let fields = checkFields(req.body, ['email', 'password'], ['email', 'password']);
     if (fields instanceof Error) return next(fields);
     const { email, password } = fields;
-    const user = await User.findOne({ email }).select('+password').populate('roleObject');
-    if (!user) return next(new ErrorResponse('Invalid email', 400))
+    const user = await User.findOne({ email }).select('+password').populate('roleObject');//roleObject we dont need to complete it with data in order to populate it the question is why ?
+    if (!user) return next(new ErrorResponse('Invalid email', 400));
 
-    const isMatch = bcrypt.compare(password, user.password);
-    if (!isMatch) return next(new ErrorResponse('Invalid password', 400))
+    // const isMatch = bcrypt.compare(password, user.password);
+    // if (!isMatch) return next(new ErrorResponse('Invalid password', 400));
 
     const token = user.getSignedJwtToken();
 
@@ -84,6 +85,8 @@ exports.login = (async (req, res, next) => {
     //res.header('x-user-token', token).status(200).send('You have sucsesfully loged in')
 });
 
+// POST /auth/logout
+// LOGOUT
 exports.logout = (async (req, res, next) => {
     return res
         .clearCookie("token")
@@ -93,25 +96,32 @@ exports.logout = (async (req, res, next) => {
     // res.status(200).cookie('token', '', options).end();
 });
 
+// GET /auth/me
+// GET my user information
 exports.getUser = (async (req, res, next) => {
-    const o = req.user.customer
-    const p = req.user.customer._id
-    const y = req.user.refToRole._id
+    const a = req.user.customer
+    const b = req.user.customer._id
+    const c = req.user.refToRole._id
     const d = req.user.refToRole
-    const l = req.user.refToRole.lastName
-    const n = req.user.roleObject
-    const a = req.user.roleObject._id
-    const b = req.user.customer.firstName
+    const e = req.user.refToRole.lastName
+    const f = req.user.roleObject
+    const g = req.user.roleObject._id
+    const h = req.user.customer.firstName
     //this is not working //req.user.roleObject.lastName = "pljj"
-    const user = await User.findById(req.user._id).populate('roleObject')
+    const user = await User.findById(req.user._id).populate('roleObject');//roleObject we dont need to complete it with data in order to populate it the question is why ?
     const i = user.roleObject._id
-    const f = user.roleObject._doc.lastName
+    const j = user.roleObject._doc.lastName
     //this is not working //const m = user.roleObject._doc.lastName = "plm"
+    //so basicly to add data with the populate is not working only to see the data 
     await user.save();
     if (!user) return next(new NotFoundError("User", 400));
     res.status(200).send(user);
 });
-// diff from refToRole and roleObject ? refToRolewe need to fill out in order to populate vs roleObject we dont need to fill out in order to populate why ?
-// when we log in the check for password if its correct is still not working 
-// still getting this error UnhandledPromiseRejectionWarning: TypeError: Cannot read property 'call' of undefined
+// diff from refToRole and roleObject ? I need to complete the refToRole field with data in order to populate it 
+// vs roleObject we dont need to complete it with data in order to populate it the question is why ?
+// when we register to encrypt the password and when we log in to check for password if its correct is still not working 
 // still need to connect FE to BE
+//when we need ... and when not
+//== vs === != vs !==
+//twilio vs zipwhip what exactly is this both
+// gateway   merchant ?

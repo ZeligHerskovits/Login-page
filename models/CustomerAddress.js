@@ -39,6 +39,10 @@ const CustomerAddressSchema = new mongoose.Schema(
         //},
       },
     },
+    zone: {
+      ref: 'Zone',
+      type: mongoose.Types.ObjectId,
+    },
   },
   {
     toJSON: { virtuals: true },

@@ -5,8 +5,6 @@ const { checkFields } = require('../middleware/checkFields');
 const Zone = require('../models/Zone');
 
 // POST /customersAddresses
-// Permissions: Dispatcher,Customer
-// Creates New CustomerAddress
 exports.createCustomerAddress = async (req, res, next) => {
     const fields = checkFields(req.body, ['customer', 'location'], ['customer', 'location']);
     if (fields instanceof Error) return next(fields);
@@ -42,20 +40,18 @@ exports.createCustomerAddress = async (req, res, next) => {
             + (address.zipCode ? ' ' + address.zipCode : '');
     }
 
-    //const zoneId = await checkZone(req.body)
+    const zoneId = await checkZone(req.body)
 
     const customerAddress = await CustomerAddress.create({
         ...req.body,
         customer: customerId,
-        //zone: zoneId
+        zone: zoneId
     });
 
     return res.status(200).json(customerAddress);
 };
 
-// GET /customersAddresses/:customerAddress_id
-// Permissions: Dispatcher,Customer
-// Get CustomerAddress By ID
+// GET /customersAddresses/customerAddress_id
 exports.getCustomerAddress = async (req, res, next) => {
     let customerAddress = await CustomerAddress.findById(req.params.customerAddress_id);
 
@@ -69,8 +65,6 @@ exports.getCustomerAddress = async (req, res, next) => {
 };
 
 // GET /customersAddresses
-// Permissions: Dispatcher,Customer
-// Get All CustomerAddresses
 exports.getCustomerAddresses = async (req, res, next) => {
     const queries = {
         ...req.query,
@@ -83,9 +77,7 @@ exports.getCustomerAddresses = async (req, res, next) => {
     return res.status(200).json(results);
 };
 
-// DELETE /customersAddresses/:customerAddress_id
-// Permissions: Dispatcher,Customer
-// Deletes CustomerAddress By ID
+// DELETE /customersAddresses/customerAddress_id
 exports.deleteCustomerAddress = async (req, res, next) => {
     //const customerAddress = await CustomerAddress.findByIdAndDelete(req.params.customerAddress_id);
     const customerAddress = (await CustomerAddress.findById(req.params.customerAddress_id)).delete();
@@ -99,11 +91,9 @@ exports.deleteCustomerAddress = async (req, res, next) => {
     return res.status(200).end();
 };
 
-// PUT /customersAddresses/:customerAddress_id
-// Permissions: Dispatcher,Customer
-// Updates CustomerAddress By ID
+// PUT /customersAddresses/customerAddress_id
 exports.updateCustomerAddress = async (req, res, next) => {
-    let error = checkFields(req.body, ['customer', 'nickname', 'createdFor', 'location']);
+    let error = checkFields(req.body, ['customer', 'location']);
     if (error) return next(error);
     if (req.body.location) {
         error = checkFields(req.body.location, [
@@ -133,7 +123,7 @@ exports.updateCustomerAddress = async (req, res, next) => {
             + (address.state ? ', ' + address.state : '')
             + (address.zipCode ? ' ' + address.zipCode : '');
     }
-    //const zoneId = await checkZone(req.body)
+    const zoneId = await checkZone(req.body)
 
     customerAddress = await CustomerAddress.findByIdAndUpdate(req.params.customerAddress_id, { ...req.body, zone: zoneId }, {
         new: true,

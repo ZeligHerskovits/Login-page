@@ -6,7 +6,6 @@ const Mongoose = require('mongoose');
 
 
 // POST /drivers
-// Creates New Driver
 exports.createDriver = async (req, res, next) => {
 
     try {
@@ -46,8 +45,7 @@ exports.createDriver = async (req, res, next) => {
     }
 };
 
-// GET /drivers/:driver_id
-// Get Driver By ID
+// GET /drivers/driver_id
 exports.getDriver = async (req, res, next) => {
     //let driver = await Driver.findById(req.params.driver_id).populate('userObject');
     const driverId = req.user.role === 'Dispatcher' ? req.params.driver_id : req.user.refToRole;
@@ -59,15 +57,13 @@ exports.getDriver = async (req, res, next) => {
 };
 
 // GET /drivers
-// Get All Drivers
 exports.getDrivers = async (req, res, next) => {
     const results = await Driver.find();
 
     return res.status(200).json(results);
 };
 
-// DELETE /drivers/:driver_id
-// Deletes Driver By ID
+// DELETE /drivers/driver_id
 exports.deleteDriver = async (req, res, next) => {
     //const driver = await Driver.findByIdAndDelete(req.params.driver_id);
     const driver = await Driver.deleteOne({ _id: req.params.driver_id });
@@ -80,8 +76,7 @@ exports.deleteDriver = async (req, res, next) => {
     return res.status(200).end();
 };
 
-// PUT /drivers/:driver_id
-// Updates Driver By ID
+// PUT /drivers/driver_id
 exports.updateDriver = async (req, res, next) => {
 
     let allowedFields = ['email', 'firstName', 'lastName', 'phoneNumber']

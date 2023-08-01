@@ -8,48 +8,23 @@ const Driver = require('../models/Driver');
 const { checkFields } = require('../middleware/checkFields');
 const url = require('url');
 const { allowedStatuses, driverAllowedStatuses, tripStatuses, driverOpenStatuses, driverUnallowedStatuses, cancelledStatuses } = require('../constants/allowedStatuses');
-//const { allowedPriorities, tripPriorities } = require('../constants/constants');
-//const buildAddress = require('../utils/buildAddress');
-//const sendSMS = require('../utils/sendSMS');
 
 // POST /trips
-// Permissions: Dispatcher,Customer
-// Creates New Trip
 exports.createTrip = async (req, res, next) => {
   let allowedFields = [
     'pickupAddress', 'dropoffAddress', 'tripScheduleTime',
     'dispatchTime', 'completedTime', 'pickupName', 'dropoffName',
-    'pickupPhone', 'dropoffPhone', 'pickoffNote', 'dropoffNote',
+    'pickupPhone', 'dropoffPhone', 'pickupNote', 'dropoffNote',
     'packageType', 'numberOfPackages', 'customer'
   ];
-  // if (req.user.role === 'Dispatcher') {
-  //   allowedFields.push(
-  //     'priority', 'status', 'paymentStatus',
-  //     'driver', 'price', 'customer'
-  //   );
-  // }
+
   const fields = checkFields(req.body, allowedFields);
   if (fields instanceof Error) return next(fields);
 
-  //if (req.body.customer) {
-  req.body.customer =
-    req.user.role === 'Dispatcher' ? req.body.customer : req.user.roleObject._id;
-  //}
-
-  // let promise1 = new Promise((resolve) => {
-  //   setTimeout(() => {
-  //     resolve("Resolved After 100 ms");
-  //   }, 100);
-  // });
-  // let promise2 = Promise.resolve("First rejected");
-  // let promise3 = Promise.reject("Second rejected");
-
-  // let retuendPromise = Promise.all([promise1, promise2, promise3]);
-  // retuendPromise.then(values =>{
-  //   console.log(values);
-  // }).catch(e=>{
-  //   console.log(e)
-  // });
+  if (req.body.customer) {
+    req.body.customer =
+      req.user.role === 'Dispatcher' ? req.body.customer : req.user.roleObject._id;
+  }
 
   let promises = await Promise.all([
     req.body.dropoffAddress ? CustomerAddress.find({ _id: req.body.dropoffAddress }) : '',
@@ -74,53 +49,27 @@ exports.createTrip = async (req, res, next) => {
     createdByUserRole: req.user.role,
     refToCreatedBy: req.user.roleObject._id,
     tripScheduleTime: req.body.tripScheduleTime >= today ? req.body.tripScheduleTime : today,
-    status: req.body.tripScheduleTime && new Date(req.body.tripScheduleTime) > today ? 'scheduled' : undefined,
+    // status: req.body.tripScheduleTime && new Date(req.body.tripScheduleTime) > today ? tripStatuses.tripCreated : undefined   //btw its not working this line of code
+    status: tripStatuses.tripCreated
   });
 
   trip = await Trip.findByIdAndUpdate(trip._id, {
     $push: {
       timeline: {
         userid: req.user._id,
-        userrole: (req.user.email === 'Login@gmail.com' ? 'Dispatcher' : req.user.role),
+        userrole: (req.user.role),
         event: ('Created'),
       },
     },
   });
 
-  //trip = await getTripById(trip._id);
+  trip = await getTripById(trip._id);
 
-  res.status(200).json(trip).end();
-  // if (req.user.email === 'website@errands.nyc' && trip.customer) {
-  //   if (trip.customer?.email) {
-  //     sendEmail({
-  //       to: trip.customer.email,
-  //       subject: 'Errands - Order Received',
-  //       text: tripCustomerMessageFactory(trip),
-  //     });
-  //   } else if (trip.customer?.phoneNumber) {
-  //     try {
-  //       //try to send to regular phone if no mobile on file
-  //       await sendSMS(trip.customer.phoneNumber, tripCustomerMessageFactory(trip));
-  //     } catch (error) { }
-  //   }
-  //   Trip.findByIdAndUpdate(trip._id, { customerNotified: true });
-  // }
-  // if (trip.pickupAddress && trip.dropoffAddress && trip.customer)
-  //   sendEmail({
-  //     to: process.env.ADMIN_EMAIL,
-  //     subject:
-  //       'New Order from ' +
-  //       (process.env.NODE_ENV === 'development' ? '(EVELT TEST)' : '') +
-  //       (trip.customer?.phoneNumber || trip.customer.billingEmail) +
-  //       ' OrderID ' +
-  //       trip.orderNumber,
-  //     text: tripCustomerMessageFactory(trip),
-  //   });
+  res.status(200).json(trip);//.end();
+
 };
 
-// GET /trips/:trip_id
-// Permissions: Dispatcher,Customer,Driver
-// Get Trip By ID
+// GET /trip/trip_id
 exports.getTrip = async (req, res, next) => {
   let trip = await getTripById(req.params.trip_id);
 
@@ -128,17 +77,17 @@ exports.getTrip = async (req, res, next) => {
     .populate('dropoffAddress')
     .populate('pickupAddress')
     //.populate({ path: 'dropoffAddress', populate: { path: 'zone' } })
-    ////.populate({ path: 'pickupAddress', populate: { path: 'zone' } })
+    //.populate({ path: 'pickupAddress', populate: { path: 'zone' } })
     .populate('customer')
     .populate('driver')
     .populate('tags')
     .populate('refToCreatedBy');
 
   if (!trip) return next(new NotFoundError('Trip'));
-
+  console.log("req.user.roleObject._id.toString()......", req.user.roleObject._id.toString())
+  console.log("trip.customer._id.toString()......", trip.customer._id.toString())
   if (req.user.role === 'Customer' && req.user.roleObject._id.toString() !== trip.customer._id.toString()) {
     return next(new ErrorResponse('You are not allowed to see this trip', 400));
-    //return next(new NotFoundError('Trip'));
   }
   if (req.user.role === 'Driver' && req.user.roleObject._id.toString() !== trip.driver._id.toString()) {
     return next(new ErrorResponse('You are not allowed to see this trip', 400));
@@ -153,9 +102,7 @@ exports.getTrip = async (req, res, next) => {
   return res.status(200).json(trip);
 };
 
-// POST /trips/:trip_id/dispatch
-// Permissions: Dispatcher
-// Send notification to driver
+// POST /trips/trip_id/dispatch
 exports.dispatchTrip = async (req, res, next) => {
   const fields = checkFields(req.body, ['packageType',
     'pickupAddress',
@@ -165,21 +112,29 @@ exports.dispatchTrip = async (req, res, next) => {
     'pickupPhone',
     'dropoffPhone',
     'tripScheduleTime',
-    'pickoffNote',
+    'driver',
+    'pickupNote',
     'dropoffNote',
     'customer',
+    'numberOfPackages',
     'priority']);
   if (fields instanceof Error) return next(fields);
 
   let trip = await Trip.findById(req.params.trip_id);
-  const newTrip = await dispatch(req.user._id, trip, next, req.body.priority);
+  if (trip.status === 'dispatched/waiting-for-driver') {
+    return next(new ErrorResponse('The trip has already been dispatched'));
+  }
+  const updateObj = {};
+  let newTrip = await dispatch({ ...req.body }, req.user._id, trip, next, req.body.priority, updateObj);
+
+  // if (newTrip.driver !== "") {
+  //   newTrip.status === tripStatuses.driverAssigned
+  // }
   res.status(200).json(newTrip).end();
 
 };
 
 // POST /trips/dispatch
-// Permissions: Dispatcher
-// Send notification to driver
 exports.dispatchMultTrips = async (req, res, next) => {
   const errors = checkFields(req.body, ['trips', 'priority'], ['trips']);
   if (errors) return next(errors);
@@ -189,19 +144,9 @@ exports.dispatchMultTrips = async (req, res, next) => {
     .populate('pickupAddress')
     .populate('customer')
     .populate('driver');
-  let newTrips = [];
+}
 
-  for (let trip of trips) {
-    newTrips.push(await dispatch(req.user, trip, next, req.body.priority));
-    driverNamespace.to(trip.driver._id.toString()).emit('trip:update', trip);
-    if (trip.customer) customerNamespace.to(trip.customer._id.toString()).emit('trip:update', trip);
-  }
-  await sendNotification(newTrips.filter(newTrip => newTrip.driver.notificationOptIn));
-  res.status(200).json(newTrips).end();
-  dispatcherNamespace.emit('trip:update', newTrips);
-};
-
-async function dispatch(user, trip, next, priority = 'normal') {
+async function dispatch(body, user, trip, next, priority = 'normal', updateObj) {
   const requiredFieldsToDispatch = [
     'packageType',
     'pickupAddress',
@@ -211,216 +156,90 @@ async function dispatch(user, trip, next, priority = 'normal') {
     'pickupPhone',
     'dropoffPhone',
     'tripScheduleTime',
-    'pickoffNote',
+    'pickupNote',
     'dropoffNote',
     'customer',
-    'priority'
     //'price',
     //'driver',
   ];
-  // for (let field of requiredFieldsToDispatch) {
-  //   if (trip[field] === undefined) {
-  //     return next(new MissingRequiredError(field));
-  //   }
-  // }
-
-  // let notificationsToDriver;
-  // if (trip.driver.smsOptIn || trip.driver.expoNotificationTokens.length == 0) {
-  //   notificationsToDriver = await sendSMS(trip.driver.smsNumber, tripDriverMessageFactory(trip));
-  // } else {
-  //   notificationsToDriver = { message: 'Driver opted out of sms' };
-  // }
+  for (let field of requiredFieldsToDispatch) {
+    if (body[field] === undefined) {
+      return next(new MissingRequiredError(field));
+    }
+  }
+  const priorityy = trip.priority !== 'normal' ? { field: 'priority', value: priority } : {};
   let newTrip = await Trip.findByIdAndUpdate(
     trip._id,
     {
-      status: 'dispatched',
+      status: 'dispatched/waiting-for-driver',
       priority: priority,
       dispatchTime: Date.now(),
       customerNotified: true,
-      // notificationsToDriver: [
-      //   notificationsToDriver,
-      //   ...(trip.notificationsToDriver || []),
-      // ],
     },
     { runValidators: true, new: true }
   );
 
-  // notificationsToDriver.trip_id = trip._id;
-  // dispatcherNamespace.emit('trip:notificationsToDriver', notificationsToDriver);
   newTrip = await getTripById(newTrip._id);
+  let array = [];
+  await timeline({ ...body }, newTrip, array, updateObj);
 
-  let array = [{ field: 'priority', value: priority }, { field: 'status', value: tripStatuses.dispatched }];
-  await Trip.findByIdAndUpdate(trip._id, {
-    $push: {
-      timeline: {
-        userid: user._id,
-        userrole: user.role,
-        updates: array,
+  array.push(...[priorityy !== "" ? priorityy : {}, { field: 'status', value: tripStatuses['dispatched/waiting-for-driver'] }])
+  if (array.length) {
+    await Trip.findByIdAndUpdate(trip._id, {
+      ...(Object.keys(updateObj).length > 0 ? { $set: updateObj } : {}),
+      ...body,
+      $push: {
+        timeline: {
+          userid: user._id,
+          userrole: user.role,
+          updates: array,
+        },
       },
-    },
-  });
-
+    });
+  }
   return newTrip;
 }
 
 // GET /trips
-// Permissions: Dispatcher,Customer,Driver
-// Get All Trip
 exports.getTrips = async (req, res, next) => {
-  const queries = {
-    ...req.query,
-  };
-  let results;
-  if (req.user.role === 'Customer') {
-    queries.customer = req.user.roleObject._id;
-  }
-  if (req.user.role === 'Driver') {
-    queries.driver = req.user.roleObject._id;
-    results = await advancedQuery({ model: Trip, queries });
-  } else {
-    results = await advancedQuery({ model: Trip, queries });
-  }
 
+  const results = await Trip.find();
   return res.status(200).json(results);
 };
 
-// GET /trips/todaysTripsCSVjson2csv
-// Permissions: Dispatcher,Customer,Driver
-// Get All Trip
-// // // exports.exportCSVOfTrips = asyncHandler(async (req, res, next) => {
-// // //   const reg = /\d{1,2}\/\d{1,2}\/\d{4}/;
-// // //   if (req.query.fromDate && !req.query.fromDate.match(reg)) {
-// // //     return next(new ErrorResponse('fromDate format Should be mm/dd/yyyy'));
-// // //   }
-
-// // //   if (req.query.toDate && !req.query.toDate.match(reg)) {
-// // //     return next(new ErrorResponse('toDate format Should be mm/dd/yyyy'));
-// // //   }
-
-// // //   let fromDate = new Date(
-// // //     req.query.fromDate ?? new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
-// // //   );
-// // //   fromDate = new Date(fromDate.setHours(0, 0, 0, 0));
-
-// // //   let toDate = new Date(
-// // //     req.query.toDate ?? new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
-// // //   );
-// // //   toDate = new Date(toDate.setHours(0, 0, 0, 0));
-
-// // //   if (fromDate > toDate) {
-// // //     return next(new ErrorResponse('toDate should be after fromDate'));
-// // //   }
-
-// // //   const query = {
-// // //     $or: [
-// // //       {
-// // //         $and: [
-// // //           { completedTime: { $gte: fromDate } },
-// // //           { completedTime: { $lte: toDate } }
-// // //         ]
-// // //       },
-// // //       {
-// // //         $and: [
-// // //           { dispatchTime: { $gte: fromDate } },
-// // //           { dispatchTime: { $lte: toDate } }
-// // //         ]
-// // //       }
-// // //     ]
-// // //   };
-
-// // //   let results = await Trip.find(query)
-// // //     .populate('dropoffAddress pickupAddress customer driver refToCreatedBy')
-// // //     .lean();
-
-// // //   // results = results.map((e) => flattenObject(e));
-
-// // //   const fields = [
-// // //     {
-// // //       label: 'Customer',
-// // //       value: (e) =>
-// // //         e.customer?.companyName ||
-// // //         (e.customer?.firstName || e.customer?.lastName
-// // //           ? `${e.customer?.firstName || ''} ${e.customer?.lastName || ''}`
-// // //           : e.customer?.billingEmail || e.customer?.phoneNumber),
-// // //     },
-// // //     {
-// // //       label: 'Driver',
-// // //       value: (e) =>
-// // //         e.driver?.firstName || e.driver?.lastName
-// // //           ? `${e.driver?.firstName || ''} ${e.driver?.lastName || ''}`
-// // //           : e.driver?.smsNumber || e.driver?.email || '',
-// // //     },
-// // //     { label: 'Pickup Name', value: 'pickupName' },
-// // //     {
-// // //       label: 'Pickup Address',
-// // //       value: (e) => e.pickupAddress?.location?.formattedAddress || e.pickupAddress?.location?.street || '',
-// // //     },
-// // //     { label: 'Pickup Line 2', value: 'pickupAddress.location.streetLine2' },
-// // //     { Label: 'Pickup Phone', value: 'pickupPhone' },
-// // //     { label: 'Delivery Name', value: 'dropoffName' },
-// // //     {
-// // //       label: 'Delivery Address',
-// // //       value: (e) => e.dropoffAddress?.location?.formattedAddress || e.pickupAddress?.location?.street || '',
-// // //     },
-// // //     { label: 'Delivery Line 2', value: 'dropoffAddress.location.streetLine2' },
-// // //     { label: 'Delivery Phone', value: 'dropoffPhone' },
-// // //     {
-// // //       label: 'Customer Phone',
-// // //       value: (e) => e.customer?.phoneNumber || '',
-// // //     },
-// // //     { label: 'Note', value: 'note' },
-// // //     { label: 'Package Type', value: 'packageType' },
-// // //     { label: 'Price', value: 'price' },
-// // //     {
-// // //       label: 'DateTime',
-// // //       value(r) {
-// // //         return new Date(r.completedTime || r.dispatchTime).toLocaleString('en-US', { timeZone: 'America/New_York' });
-// // //       },
-// // //     },
-// // //   ];
-
-// // //   const csv = await parseAsync(results, { fields });
-// // //   res.writeHead(200, {
-// // //     'Content-Type': 'text/csv',
-// // //     'Content-Disposition': `attachment; filename=${fromDate.toLocaleDateString()} Trips.csv`,
-// // //   });
-// // //   res.end(csv);
-// // // });
-
-// PUT /trips/:trip_id
-// Permissions: Dispatcher, Driver, // not done work for Customer yet
-// Updates Trip By ID
+// PUT /trip/trip_id
 exports.updateTrip = async (req, res, next) => {
   let allowedFields = [
     'pickupAddress',
     'dropoffAddress',
     'pickupName',
     'dropoffName',
-    'numberOfPackages',
+    'pickupNote',
     'dropoffNote',
     'pickupPhone',
     'dropoffPhone',
+    'numberOfPackages',
     'tripScheduleTime',
     'note',
-    // 'customer',
-    'images',
+    //'customer',
+    //'images',
     'packageType',
     'status',
     'paymentStatus',
     'priority',
     'dropoffType'
   ];
-  if (req.user.role === 'Dispatcher') {
+  if (req.user.role !== 'Dispatcher') {
     allowedFields.push(
       'driver',
       'price',
       'customer',
-      'tags'
+      //'tags'
     );
   }
 
-  const error = checkFields(req.body, allowedFields);
-  if (error) return next(error);
+  const fields = checkFields(req.body, allowedFields);
+  if (fields instanceof Error) return next(fields);
 
   if ('status' in req.body && !allowedStatuses.includes(req.body.status))
     return next(new ErrorResponse('Invalid status'));
@@ -435,19 +254,17 @@ exports.updateTrip = async (req, res, next) => {
     .populate('dropoffAddress')
     .populate('pickupAddress')
 
+  if (trip.status == tripStatuses['droped-off'])
+    return next(new ErrorResponse('Trip cannot be edited because it is already completed'));
+
   if (!trip) return next(new NotFoundError('Trip'));
 
-  if (!trip.driver && !req.body.driver && req.body.status === tripStatuses.completed) {
-    return next(new ErrorResponse("Can't complete without a driver", 400));
-  }
-
   if (req.body.customer) {
-    //customer can't update the customer on trip, or add something other then him
     req.body.customer = req.user.role === 'Dispatcher' ? req.body.customer : trip.customer || req.user.roleObject._id;
   }
 
   let promises = await Promise.all([
-    req.body.dropoffAddress ? CustomerAddress.find({ _id: req.body.dropoffAddress }) : 1,
+    req.body.dropoffAddress ? CustomerAddress.find({ _id: { $in: req.body.dropoffAddress._id } }) : 1,
     req.body.pickupAddress ? CustomerAddress.find({ _id: req.body.pickupAddress }) : 1,
     req.body.customer ? Customer.findById(req.body.customer) : 1,
     req.body.driver ? Driver.findById(req.body.driver) : 1,
@@ -462,16 +279,31 @@ exports.updateTrip = async (req, res, next) => {
   if (!promises[3]) {
     return next(ErrorResponse('Driver', 400));
   }
-  await updateAsCanceled(trip, req.body, req.user);
 
-  let newStatus = req.body.driver === null || req.body.status == tripStatuses.driverCancelled ? tripStatuses.awaitingDriver
+  let newStatus = req.body.driver === null || req.body.status == tripStatuses.driverCancelled ? tripStatuses['dispatched/waiting-for-driver']
     : req.body.driver && req.body.driver !== trip.driver?._id.toString() ? tripStatuses.driverAssigned
-      : req.body.status || trip.status;
+      : req.body.driver && req.body.driver === trip.driver?._id.toString() ? tripStatuses.driverAssigned
+        : req.body.status || trip.status;
+
+  if (!trip.driver && !req.body.driver && req.body.status === tripStatuses.driverAssigned) {
+    return next(new ErrorResponse("You need to add a driver", 400));
+  }
   //since dispatch has to be triggered manually, let's set the status back to driver-assigned to make sure dispatch is triggered and new driver get's notified
 
-  let completedTime = (trip.status !== tripStatuses.completed && newStatus == tripStatuses.completed) ? new Date() : trip.completedTime || null;
-  if (req.body.tags)
-    req.body.tags = await Tag.find({ _id: { $in: req.body.tags.map(t => t._id) } });
+  // const formattedDate = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }, { year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', minute: 'numeric', hour12: true }).replace(',', '');
+  // console.log(formattedDate); // Output: 2023-06-05 3:05
+
+  // const moment = require('moment');
+  // const currentDate = new Date();
+  // const utcDate = moment.utc(currentDate).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+  // const formattedDate = moment.utc(utcDate).local().format('YYYY-MM-DD h:mm');
+
+  // let completedTime = new Date(Date.now()).toString()
+  // console.log(new Date(Date.now()).toISOString());
+
+  let completedTime = (trip.status !== tripStatuses['droped-off'] && newStatus == tripStatuses['droped-off']) ? new Date(Date.now()).toISOString() : trip.completedTime || null;
+  // if (req.body.tags)
+  //   req.body.tags = await Tag.find({ _id: { $in: req.body.tags.map(t => t._id) } });
 
   await Trip.findByIdAndUpdate(
     req.params.trip_id,
@@ -486,57 +318,65 @@ exports.updateTrip = async (req, res, next) => {
   );
 
   let array = [];
-  timeline({ ...req.body, status: newStatus }, trip, array);
-  if (array) {
-    trip = await Trip.findByIdAndUpdate(req.params.trip_id, {
-      $push: {
-        timeline: { userid: req.user._id, userrole: req.user.role, updates: array },
-      },
-    });
-  }
+  const updateObj = {};
+  await timeline({ ...req.body, status: newStatus }, trip, array, updateObj);
 
+  if (array.length) {
+    try {
+      await Trip.updateOne(
+        { _id: req.params.trip_id },
+        {
+          $push: {
+            timeline: { userid: req.user._id, userRole: req.user.role, updates: array },
+          },
+          ...(Object.keys(updateObj).length > 0 ? { $set: updateObj } : {}),
+        }
+      );
+      console.log('Trip updated successfully.');
+    } catch (err) {
+      console.log(err)
+    }
+  }
   trip = await getTripById(trip._id);
 
-  if (trip.customer) customerNamespace.to(trip.customer._id.toString()).emit('trip:update', trip);
-  if (driverAllowedStatuses.includes(trip.status) && trip.driver) driverNamespace.to(trip.driver._id.toString()).emit('trip:update', trip);
-
   res.status(200).json(trip).end();
-
-  if (cancelledStatuses.includes[req.body.status]) {
-    let notificationsToDriver;
-    if (trip.driver.smsOptIn || trip.driver.expoNotificationTokens.length == 0) {
-      notificationsToDriver = await sendSMS(trip.driver.smsNumber, 'TRIP CANCELLED');
-    } else {
-      notificationsToDriver = { message: 'Driver opted out of sms' };
-    }
-    await Trip.findByIdAndUpdate(
-      trip._id,
-      {
-        notificationsToDriver: [
-          notificationsToDriver,
-          ...(trip.notificationsToDriver || []),
-        ],
-      },
-      { runValidators: true }
-    );
-    notificationsToDriver.trip_id = trip._id;
-    dispatcherNamespace.emit(
-      'trip:notificationsToDriver',
-      notificationsToDriver
-    );
-  }
 };
 
 // PUT /trips
-// Permissions: Dispatcher, Driver
-// Updates Multiple Trips By ID
 exports.updateTrips = async (req, res, next) => {
-  let allowedFields = ['driver', 'status'];
-  if (req.user.role === 'Dispatcher') {
-    allowedFields.push('tags');
+  let allowedFields = [
+    'pickupAddress',
+    'dropoffAddress',
+    'pickupName',
+    'dropoffName',
+    'pickupNote',
+    'dropoffNote',
+    'pickupPhone',
+    'dropoffPhone',
+    'numberOfPackages',
+    'tripScheduleTime',
+    'note',
+    //'customer',
+    //'images',
+    'packageType',
+    'status',
+    'paymentStatus',
+    'priority',
+    'dropoffType'
+  ];
+  if (req.user.role !== 'Dispatcher') {
+    allowedFields.push(
+      'driver',
+      'price',
+      'customer',
+      //'tags'
+    );
   }
-  const error = checkFields(req.body.values, allowedFields);
-  if (error) return next(error);
+  // if (req.user.role === 'Dispatcher') {
+  //   allowedFields.push('tags');
+  // }
+  const fields = checkFields(req.body.values, allowedFields);
+  if (fields instanceof Error) return next(fields);
   if (req.user.role === 'Driver') {
     if (req.body.values.status) {
       /* check for valid req.body.values.status */
@@ -560,8 +400,6 @@ exports.updateTrips = async (req, res, next) => {
   await Trip.updateMany({ _id: { $in: req.body.trips } }, { ...req.body.values }, { runValidators: true, });
 
   for (let t of trips) {
-    await updateAsCanceled(t, req.body.values, req.user);
-    console.log(req.body.values.status)
 
     //since dispatch has to be triggered manually, let's set the status back to driver-assigned to make sure dispatch is triggered and new driver get's notified
     let newStatus = req.body.values.driver && req.body.values.driver !== t.driver?._id ? tripStatuses.driverAssigned
@@ -571,12 +409,14 @@ exports.updateTrips = async (req, res, next) => {
     await Trip.findByIdAndUpdate(t._id, { status: newStatus, completedTime });
 
     let array = [];
-    timeline({ ...req.body.values, status: newStatus }, t, array);
+    const updateObj = {};
+    timeline({ ...req.body.values, status: newStatus }, t, array, updateObj);
     if (array.length) {
       await Trip.findByIdAndUpdate(t._id, {
         $push: {
           timeline: { userid: req.user._id, userrole: req.user.role, updates: array },
         },
+        ...(Object.keys(updateObj).length > 0 ? { $set: updateObj } : {}),
       });
     }
   }
@@ -588,54 +428,12 @@ exports.updateTrips = async (req, res, next) => {
     .populate('driver')
     .populate('tags')
     .populate('refToCreatedBy');
-  dispatcherNamespace.emit('trip:update', trips);
-  for (let t of trips) {
-    if (t.driver && driverAllowedStatuses.includes(t.status)) {
-      driverNamespace.to(t.driver._id.toString()).emit('trip:update', t);
-    }
-    if (t.customer) customerNamespace.to(t.customer._id.toString()).emit('trip:update', t);
-  }
 
   res.status(200).json(trips).end();
 };
 
-async function updateAsCanceled(trip, body, user) {
-  async function notify(trip) {
-    driverNamespace.to(trip.driver._id.toString()).emit('trip:update', trip);
-    if (trip.driver.notificationOptIn)
-      await sendNotification([trip], true);
-    if (trip.driver.smsOptIn || trip.driver.expoNotificationTokens.length == 0)
-      await sendSMS(trip.driver.smsNumber, tripDriverMessageFactory(trip, true));
-  }
+async function timeline(updates, trip, array, updateObj) {
 
-  if (user.role != "Driver" && cancelledStatuses.includes(body.status)) {
-    await notify(trip);
-  }
-  else if (
-    trip.driver?._id
-    && body.driver
-    && driverOpenStatuses.includes(trip.status)
-    && body.driver !== trip.driver?._id
-    && user.role === "Dispatcher"
-  ) {
-    //the previous driver needs to be notified
-    /* make a copy so driver can see history */
-    trip.status = tripStatuses.adminCancelled;
-    trip.timeline.push({ userid: user._id, userrole: user.role, event: trip.status });
-    delete trip._doc.__t;
-    // console.log(trip)
-    const newTrip = await StaleTrip.create({
-      ...trip._doc,
-      refToActive: trip._id,
-      refToOrderNumber: trip.orderNumber,
-      _id: mongoose.Types.ObjectId()
-    });
-
-    await notify(newTrip);
-  }
-}
-
-function timeline(updates, trip, array) {
   for (let [key, value] of Object.entries(updates)) {
     let temp = trip[key];
 
@@ -648,125 +446,45 @@ function timeline(updates, trip, array) {
       value = value.toString();
       temp = temp.toString();
     }
-
-    if (Array.isArray(value)) {
-      value.forEach(v => {
-        if (!temp.includes(v)) array.push({ field: key, value: v.description + ' added' });
-      })
-    }
+    // if (Array.isArray(value)) {
+    //   value.forEach(v => {
+    //     if (!temp.includes(v)) array.push({ field: key, value: v });
+    //   })
+    // }
     else {
       if ((temp?._id || temp) != (value?._id || value)) {
-        if (typeof value === 'object' && value) {
-          value = value.label;
-        }
+        // if (typeof value === 'object' && value) {
+        //   value = value.label;
+        // }
         array.push({ field: key, value: value });
       }
     }
+    if (!trip[key]) {
+      updateObj[key] = value;
+      //updateObj.key = value;
+    }
   }
 }
-// DELETE /trips/:trip_id
-// Permissions: Dispatcher
-// Deletes Trip By ID
+
+// DELETE /trips/trip_id
 exports.deleteTrip = async (req, res, next) => {
   const trip = await Trip.findById(req.params.trip_id);
   if (!trip) return next(new NotFoundError('Trip'));
 
   await Trip.deleteById(req.params.trip_id);
-  // await updateAsCanceled(trip, { status: tripStatuses.cancelled }, req.user)
 
   res.status(200).json({ success: true }).end();
 };
 
 // DELETE /trips
-// Permissions: Dispatcher
-// Deletes multiple Trips By ID
 exports.deleteMultTrips = async (req, res, next) => {
+  //Need to check what will happen if one is there but not othere and give out what id is not there
   const trips = await Trip.find({ _id: { $in: req.body.trips } });
   if (!trips) return next(new NotFoundError('Trips'));
 
   await Trip.delete({ _id: { $in: req.body.trips } });
-  // for (let t of trips) await updateAsCanceled(t, { status: tripStatuses.cancelled }, req.user)
 
   res.status(200).json({ success: true }).end();
-  dispatcherNamespace.emit('trip:deleted', { ids: req.body.trips });
-  for (let trip of trips) {
-    if (trip.customer) customerNamespace.to(trip.customer._id.toString()).emit('trip:deleted', trip._id);
-  }
-};
-
-// GET /search/trips
-// Permissions: Dispatcher
-// Search All Trips
-exports.searchTrips = async (req, res, next) => {
-  const filter = url.parse(req.url, true).query.filter;
-  const regexp = new RegExp(filter, 'i');
-  // const queries = {
-  //   ...req.query,
-  // };
-  // let trips = await advancedQuery({ model: Trip, queries });
-  // trips = trips.filter(t => [
-  //   t.orderNumber.toString(),
-  //   t.customer?.fullName,
-  //   t.pickupName,
-  //   t.dropoffName,
-  //   t.driver?.fullName,
-  //   t.status,
-  //   t.pickupAddress?.location.formattedAddress,
-  //   t.dropoffAddress?.location.formattedAddress,
-  //   t.packageType,
-  //   t.note,
-  // ]
-  //   .some(s => regexp.test(s)))
-  // console.log(trips.length)
-
-  if (!filter) {
-    const queries = {
-      ...req.query,
-    };
-    const results = await advancedQuery({ model: Trip, queries });
-    return res.status(200).json(results);
-  }
-  else {
-    const trips = await Trip.aggregate([
-      { $match: { deleted: false } },
-      { $lookup: { from: 'customers', localField: 'customer', foreignField: '_id', as: 'customer' } },
-      { $lookup: { from: 'drivers', localField: 'driver', foreignField: '_id', as: 'driver' } },
-      { $lookup: { from: 'customeraddresses', localField: 'pickupAddress', foreignField: '_id', as: 'pickupAddress' } },
-      { $lookup: { from: 'customeraddresses', localField: 'dropoffAddress', foreignField: '_id', as: 'dropoffAddress' } },
-      { $unwind: '$customer' },
-      // { $unwind: '$driver' },
-      { $unwind: '$pickupAddress' },
-      { $unwind: '$dropoffAddress' },
-      {
-        $match: {
-          $expr: {
-            $or: [
-              { $regexMatch: { input: '$customer.firstName', regex: regexp } },
-              { $regexMatch: { input: '$customer.lastName', regex: regexp } },
-              // { $regexMatch: { input: '$driver.firstName', regex: regexp } },
-              // { $regexMatch: { input: '$driver.lastName', regex: regexp } },
-              { $eq: ['$status', filter] },
-              { $regexMatch: { input: { $toString: '$orderNumber' }, regex: regexp } },
-              { $regexMatch: { input: '$pickupName', regex: regexp } },
-              { $regexMatch: { input: '$pickupPhone', regex: regexp } },
-              { $regexMatch: { input: '$dropoffName', regex: regexp } },
-              { $regexMatch: { input: '$dropoffPhone', regex: regexp } },
-              { $regexMatch: { input: '$pickupAddress.location.formattedAddress', regex: regexp } },
-              // { $regexMatch: { input: '$pickupAddress.location.street', regex: regexp } },
-              { $regexMatch: { input: '$dropoffAddress.location.formattedAddress', regex: regexp } },
-              // { $regexMatch: { input: '$dropoffAddress.location.street', regex: regexp } },
-              // { $regexMatch: { input: '$packageType', regex: regexp } },
-              // { $regexMatch: { input: '$note', regex: regexp } },
-            ]
-          }
-        }
-      },
-      { $sort: { 'createdAt': -1 } }
-    ]);
-
-    console.log(trips.length)
-    return res.status(200).json(trips);
-  }
 };
 
 async function getTripById(id) {
@@ -778,92 +496,4 @@ async function getTripById(id) {
     .populate('customer')
     .populate('driver')
     .populate('refToCreatedBy');
-}
-
-function tripDriverMessageFactory(trip, canceled = false) {
-  const fromInfo = `${trip.pickupName} ${trip.pickupPhone}`;
-  const toInfo = `${trip.dropoffName} ${trip.dropoffPhone}`;
-  let pickupAddress = buildAddress(trip.pickupAddress);
-  let dropoffAddress = buildAddress(trip.dropoffAddress);
-  function customer() {
-    return (
-      trip.customer?.companyName ||
-      (trip.customer?.firstName || trip.customer?.lastName
-        ? `${trip.customer?.firstName || ''} ${trip.customer?.lastName || ''}`
-        : '')
-    );
-  }
-
-  let smsBody = '';
-  if (canceled) {
-    smsBody += ''
-    smsBody += `🚫CANCELLED🚫 TRIP #${trip.orderNumber}:
-    The following ${trip.priority === 'urgent' ? 'urgent' : ''} trip has been CANCELED by the ${trip.status == tripStatuses.customerCancelled ? 'costumer' : 'dispatcher'}`
-  } else {
-    if (trip.priority === 'urgent') {
-      smsBody += `🚨 PRIORITY 🚨
-        
-        `;
-    }
-    smsBody += `NEW TRIP #${trip.orderNumber}:`
-  }
-
-  smsBody += ` 
-Customer: ${customer()} 
-
-Pickup Info: 
-${fromInfo}
-${pickupAddress}
-
-Dropoff Info: 
-${toInfo}
-${dropoffAddress}
-
-Package Type: 
-${trip.numberOfPackages || 1} ${trip.packageType}`;
-
-  if (trip.note || trip.dropoffNote) {
-    smsBody += `
-
-Note: `;
-
-    if (trip.note) {
-      smsBody += `
-${trip.note}`;
-    }
-    if (trip.dropoffNote) {
-      smsBody += `
-${trip.dropoffNote}`;
-    }
-  }
-
-  return smsBody;
-}
-
-function tripCustomerMessageFactory(trip) {
-  const fromInfo = `${trip.pickupName} ${trip.pickupPhone}`;
-  const toInfo = `${trip.dropoffName} ${trip.dropoffPhone}`;
-  let pickupAddress = buildAddress(trip.pickupAddress);
-  let dropoffAddress = buildAddress(trip.dropoffAddress);
-
-  let smsBody = `Order Received: 
-
-Pickup: 
-${fromInfo}
-${pickupAddress}
-
-Delivery: 
-${toInfo}
-${dropoffAddress}
-
-Package Type: ${trip.packageType}`;
-
-  if (trip.note) {
-    smsBody += `
-
-Note: 
-${trip.note}
-`;
-  }
-  return smsBody;
 }

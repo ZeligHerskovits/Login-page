@@ -11,7 +11,7 @@ const { Error } = require('mongoose');
 const Customer = require('../models/Customer');
 
 // POST /auth/register
-// CREATE new user and customer
+// Create new user and customer
 exports.register = (async (req, res, next) => {
    
    //const a = await Customer.deleteMany({ firstName: { $nin: ["zelig", "zelig2", "zelig3", "zelig4"] } });
@@ -60,7 +60,7 @@ exports.register = (async (req, res, next) => {
 });
 
 // POST /auth/login
-// LOGIN
+// Login
 exports.login = (async (req, res, next) => {
 
     let fields = checkFields(req.body, ['email', 'password'], ['email', 'password']);
@@ -86,7 +86,7 @@ exports.login = (async (req, res, next) => {
 });
 
 // POST /auth/logout
-// LOGOUT
+// Logout
 exports.logout = (async (req, res, next) => {
     return res
         .clearCookie("token")
@@ -117,11 +117,3 @@ exports.getUser = (async (req, res, next) => {
     if (!user) return next(new NotFoundError("User", 400));
     res.status(200).send(user);
 });
-// diff from refToRole and roleObject ? I need to complete the refToRole field with data in order to populate it 
-// vs roleObject we dont need to complete it with data in order to populate it the question is why ?
-// when we register to encrypt the password and when we log in to check for password if its correct is still not working 
-// still need to connect FE to BE
-//when we need ... and when not
-//== vs === != vs !==
-//twilio vs zipwhip what exactly is this both
-// gateway   merchant ?

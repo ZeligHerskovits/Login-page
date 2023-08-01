@@ -47,6 +47,13 @@ const {
     deleteCustomerAddress
 } = require('../controllers/customerAddresses');
 
+const {
+    getZones,
+    addZone,
+    editZone,
+    deleteZone
+} = require('../controllers/zones');
+
 //auth
 router.post('/auth/register', register);
 router.post('/auth/login', login);
@@ -84,5 +91,11 @@ router.get('/customerAddress/:customerAddress_id', checkToken, getCustomerAddres
 router.get('/customerAddresses', checkToken, getCustomerAddresses);
 router.delete('/customerAddress/:customerAddress_id', checkToken, deleteCustomerAddress);
 router.put('/customerAddress/:customerAddress_id', checkToken, updateCustomerAddress);
+
+//zones
+router.post('/zone', checkToken, addZone);
+router.get('/zones', checkToken, getZones);
+router.delete('/zone/:zone_id', checkToken, deleteZone);
+router.put('/zone/:zone_id', checkToken, editZone);
 
 module.exports = router;

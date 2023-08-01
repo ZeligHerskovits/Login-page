@@ -1,0 +1,25 @@
+diff from refToRole and roleObject ? I need to complete the refToRole field with data in order to populate it 
+vs roleObject we dont need to complete it with data in order to populate it the question is why ?
+when we register to encrypt the password and when we log in to check for password if its correct is still not working 
+still need to connect FE to BE
+when we need ... and when not
+== vs === != vs !==
+twilio vs zipwhip what exactly is this both
+gateway   merchant ?
+
+
+
+  // let promise1 = new Promise((resolve) => {
+  //   setTimeout(() => {
+  //     resolve("Resolved After 100 ms");
+  //   }, 100);
+  // });
+  // let promise2 = Promise.resolve("First rejected");
+  // let promise3 = Promise.reject("Second rejected");
+
+  // let retuendPromise = Promise.all([promise1, promise2, promise3]);
+  // retuendPromise.then(values =>{
+  //   console.log(values);
+  // }).catch(e=>{
+  //   console.log(e)
+  // });

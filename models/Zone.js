@@ -8,7 +8,7 @@ const ZoneSchema = new mongoose.Schema(
             type: String,
             match: [/^#[0-9A-F]{6}$/i, 'Pls enter a valid hex code number']
         },
-        zipCodes: [{ 
+        zipCodes: [{
             type: String,
             validate: [val => val.length <= 12, 'You can only add up to 12 zip codes in a zone']
         }],
@@ -18,10 +18,9 @@ const ZoneSchema = new mongoose.Schema(
         toObject: { virtuals: true },
         timestamps: true,
         selectPopulatedPaths: false,
-      }
-  );
-  
-  const Zone = mongoose.model('Zone', ZoneSchema);
-  
-  module.exports = Zone;
-  
+    }
+);
+
+const Zone = mongoose.model('Zone', ZoneSchema);
+
+module.exports = Zone;

@@ -66,7 +66,6 @@ module.exports.insertOrUpdateCustomer = async (req) => {
 }
 
 // POST /customer
-// CREATE Customer 
 exports.createCustomer = async (req, res, next) => {
   try {
     const customer = await module.exports.insertOrUpdateCustomer(req);
@@ -76,8 +75,7 @@ exports.createCustomer = async (req, res, next) => {
   }
 }
 
-// GET /customer/:customer_id
-// GET Customer By ID
+// GET /customer/customer_id
 exports.getCustomer = async (req, res, next) => {
 
   if (!mongoose.Types.ObjectId.isValid(req.params.customer_id)) {
@@ -102,8 +100,7 @@ exports.getCustomers = async (req, res, next) => {
   return res.status(200).json(results);
 };
 
-// DELETE /customers/:customer_id
-// Deletes Customer By ID
+// DELETE /customers/customer_id
 exports.deleteCustomer = async (req, res, next) => {
   //const customer = await Customer.findByIdAndDelete(req.params.customer_id);
   if (!mongoose.Types.ObjectId.isValid(req.params.customer_id)) {
@@ -120,8 +117,7 @@ exports.deleteCustomer = async (req, res, next) => {
   return res.status(200).end();
 };
 
-// PUT /customers/:customer_id
-// Updates Customer By ID
+// PUT /customers/customer_id
 exports.updateCustomer = async (req, res, next) => {
   // console.log("req.path....." + req.path)
   // console.log("req.url....." + req.url)

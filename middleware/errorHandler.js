@@ -19,7 +19,6 @@ exports.errorHandler = (err, req, res, next) => {
     if (isJsonString(err.message)) {
         err.message = JSON.parse(err.message);
     }
-
     if (err.message === "invalid signature") {
         err.message = err.message.replace("signature", "token");
     }
@@ -29,8 +28,8 @@ exports.errorHandler = (err, req, res, next) => {
     // if (err.message.includes('\\"')) {
     //     err.message = err.message.replace('\\"', '');
     //   }
-    
     console.log(err.stack);
+    
     res.status(error?.statusCode || 400).json({ //.send(err.message);
         error: err.message
     });

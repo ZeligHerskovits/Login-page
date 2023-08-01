@@ -25,6 +25,10 @@ const TripSchema = new mongoose.Schema(
             type: mongoose.Types.ObjectId,
             ref: 'CustomerAddress',
         },
+        numberOfPackages: {
+            type: Number,
+            default: 1,
+        },
         tripScheduleTime: { type: Date, default: Date.now },
         dispatchTime: { type: Date },
         completedTime: { type: Date },
@@ -46,13 +50,28 @@ const TripSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['waiting-for-driver', 'driver-assigned', 'picked-up', 'droped-off', 'cancelled', 'on-hold'],
-            default: 'waiting-for-driver',
+            enum: ['tripCreated', 'dispatched/waiting-for-driver', 'driver-assigned', 'picked-up', 'droped-off', 'cancelled', 'on-hold'],
+            default: 'dispatched/waiting-for-driver',
         },
         priority: {
             type: String,
             enum: ['normal', 'rush', 'urgent'],
             default: 'normal',
+        },
+        packageType: {
+            type: String,
+            enum: [
+                'Bag',
+                'Box',
+                'Invitation',
+                'Luggage',
+                'Envelope',
+                'Flower',
+                'Gift Arrangement',
+                'Garment Bag',
+                'Open Wrap',
+                'Delicate',
+                'Other']
         },
         timeline: [
             {

@@ -5,7 +5,7 @@ const { checkFields } = require('../middleware/checkFields');
 const Mongoose = require('mongoose');
 
 
-// POST /drivers
+// POST /drivers 
 exports.createDriver = async (req, res, next) => {
 
     try {

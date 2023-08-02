@@ -1,5 +1,4 @@
 const Zone = require('../models/Zone');
-//const asyncHandler = require('../utils/async');
 const { checkFields } = require('../middleware/checkFields');
 const { ErrorResponse } = require('../utils/errors');
 const CustomerAddress = require('../models/CustomerAddress');

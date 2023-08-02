@@ -16,7 +16,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //const server = http.createServer(app);
 
 
-//app.use('/', (req, res) => res.status(200).send('Server is running'));
 //server.listen(PORT, console.log(`Server running on port 3000`));
 mongoose.connect('mongodb://localhost/loginPage', { useNewUrlParser: true })
   .then(() => console.log('connected to MongoDB...'))

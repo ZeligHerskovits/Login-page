@@ -7,7 +7,6 @@ const Mongoose = require('mongoose');
 
 // POST /drivers 
 exports.createDriver = async (req, res, next) => {
-
     try {
         let allowedFields = ['email', 'firstName', 'lastName', 'phoneNumber']
         let requiredFields = ['email', 'firstName', 'lastName', 'phoneNumber',]
@@ -15,7 +14,6 @@ exports.createDriver = async (req, res, next) => {
         const fields = checkFields(req.body, allowedFields, requiredFields);
         if (fields instanceof Error) return next(fields);
 
-        //if (req.body.email) {
         const diverWithThisEmailExists = await User.find({ role: 'Driver', email: req.body.email });
         if (diverWithThisEmailExists) return next(new ErrorResponse('User With this email exists', 400));
         const checkForDriver = await Driver.findOne({ email: req.body.email });
@@ -35,10 +33,6 @@ exports.createDriver = async (req, res, next) => {
 
             return res.status(200).json(driver);
         }
-        // } else {
-        //     const driver = await Driver.create(req.body);
-        //     return res.status(200).json(driver)
-        // }
     } catch (e) {
         console.log(e.stack);
         return next(new ErrorResponse(e.message, 400));
@@ -65,7 +59,6 @@ exports.getDrivers = async (req, res, next) => {
 
 // DELETE /drivers/driver_id
 exports.deleteDriver = async (req, res, next) => {
-    //const driver = await Driver.findByIdAndDelete(req.params.driver_id);
     const driver = await Driver.deleteOne({ _id: req.params.driver_id });
     if (!driver) return next(new NotFoundError('Driver'));
 
@@ -95,10 +88,12 @@ exports.updateDriver = async (req, res, next) => {
         return next(new ErrorResponse('You are not allowed to update this driver', 400));
     }
 
-    //if (req.body.email) {
     let userForDriverExists = await User.findOne({ role: 'Driver', refToRole: driver._id });
     if (!userForDriverExists) {
         await User.create({
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            phoneNumber: req.body.phoneNumber,
             email: req.body.set.email,
             refToRole: driver.id,
             role: 'Driver'
@@ -107,14 +102,13 @@ exports.updateDriver = async (req, res, next) => {
     else {
         await User.findOneAndUpdate({ role: 'Driver', refToRole: driver._id }, { email: req.body.set.email || req.body.unset.email })
     }
-    //}
-    let update = {
-        $set: { ...req.body },
+    //let update = {
+        //$set: { ...req.body },
         //$unset: { ...req.body.unset },
         // $push: { ...req.body.push },
-    };
+    //};
 
-    driver = await Driver.findByIdAndUpdate(driver._id, update, { new: true, runValidators: true }).populate('userObject');
+    driver = await Driver.findByIdAndUpdate(driver._id, { $set: { ...req.body } }, { new: true, runValidators: true }).populate('userObject');
     return res.status(200).json(driver);
 };
 //still need to test it

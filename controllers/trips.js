@@ -6,17 +6,17 @@ const CustomerAddress = require('../models/CustomerAddress');
 const Customer = require('../models/Customer');
 const Driver = require('../models/Driver');
 const { checkFields } = require('../middleware/checkFields');
-const url = require('url');
 const { allowedStatuses, driverAllowedStatuses, tripStatuses, driverOpenStatuses, driverUnallowedStatuses, cancelledStatuses } = require('../constants/allowedStatuses');
+
+let allowedFields = [
+  'pickupAddress', 'dropoffAddress', 'tripScheduleTime',
+  'dispatchTime', 'completedTime', 'pickupName', 'dropoffName',
+  'pickupPhone', 'dropoffPhone', 'pickupNote', 'dropoffNote',
+  'packageType', 'numberOfPackages', 'customer'
+];
 
 // POST /trips
 exports.createTrip = async (req, res, next) => {
-  let allowedFields = [
-    'pickupAddress', 'dropoffAddress', 'tripScheduleTime',
-    'dispatchTime', 'completedTime', 'pickupName', 'dropoffName',
-    'pickupPhone', 'dropoffPhone', 'pickupNote', 'dropoffNote',
-    'packageType', 'numberOfPackages', 'customer'
-  ];
 
   const fields = checkFields(req.body, allowedFields);
   if (fields instanceof Error) return next(fields);
@@ -104,20 +104,8 @@ exports.getTrip = async (req, res, next) => {
 
 // POST /trips/trip_id/dispatch
 exports.dispatchTrip = async (req, res, next) => {
-  const fields = checkFields(req.body, ['packageType',
-    'pickupAddress',
-    'dropoffAddress',
-    'pickupName',
-    'dropoffName',
-    'pickupPhone',
-    'dropoffPhone',
-    'tripScheduleTime',
-    'driver',
-    'pickupNote',
-    'dropoffNote',
-    'customer',
-    'numberOfPackages',
-    'priority']);
+  allowedFields.push('driver', 'priority')
+  const fields = checkFields(req.body, allowedFields);
   if (fields instanceof Error) return next(fields);
 
   let trip = await Trip.findById(req.params.trip_id);
@@ -147,21 +135,7 @@ exports.dispatchMultTrips = async (req, res, next) => {
 }
 
 async function dispatch(body, user, trip, next, priority = 'normal', updateObj) {
-  const requiredFieldsToDispatch = [
-    'packageType',
-    'pickupAddress',
-    'dropoffAddress',
-    'pickupName',
-    'dropoffName',
-    'pickupPhone',
-    'dropoffPhone',
-    'tripScheduleTime',
-    'pickupNote',
-    'dropoffNote',
-    'customer',
-    //'price',
-    //'driver',
-  ];
+  const requiredFieldsToDispatch = [...allowedFields, 'driver'];
   for (let field of requiredFieldsToDispatch) {
     if (body[field] === undefined) {
       return next(new MissingRequiredError(field));
@@ -209,35 +183,8 @@ exports.getTrips = async (req, res, next) => {
 
 // PUT /trip/trip_id
 exports.updateTrip = async (req, res, next) => {
-  let allowedFields = [
-    'pickupAddress',
-    'dropoffAddress',
-    'pickupName',
-    'dropoffName',
-    'pickupNote',
-    'dropoffNote',
-    'pickupPhone',
-    'dropoffPhone',
-    'numberOfPackages',
-    'tripScheduleTime',
-    'note',
-    //'customer',
-    //'images',
-    'packageType',
-    'status',
-    'paymentStatus',
-    'priority',
-    'dropoffType'
-  ];
-  if (req.user.role !== 'Dispatcher') {
-    allowedFields.push(
-      'driver',
-      'price',
-      'customer',
-      //'tags'
-    );
-  }
 
+  allowedFields.push('status', 'paymentStatus', 'priority', 'dropoffType', 'driver');
   const fields = checkFields(req.body, allowedFields);
   if (fields instanceof Error) return next(fields);
 
@@ -344,37 +291,7 @@ exports.updateTrip = async (req, res, next) => {
 
 // PUT /trips
 exports.updateTrips = async (req, res, next) => {
-  let allowedFields = [
-    'pickupAddress',
-    'dropoffAddress',
-    'pickupName',
-    'dropoffName',
-    'pickupNote',
-    'dropoffNote',
-    'pickupPhone',
-    'dropoffPhone',
-    'numberOfPackages',
-    'tripScheduleTime',
-    'note',
-    //'customer',
-    //'images',
-    'packageType',
-    'status',
-    'paymentStatus',
-    'priority',
-    'dropoffType'
-  ];
-  if (req.user.role !== 'Dispatcher') {
-    allowedFields.push(
-      'driver',
-      'price',
-      'customer',
-      //'tags'
-    );
-  }
-  // if (req.user.role === 'Dispatcher') {
-  //   allowedFields.push('tags');
-  // }
+  allowedFields.push('status', 'paymentStatus', 'priority', 'dropoffType', 'driver')
   const fields = checkFields(req.body.values, allowedFields);
   if (fields instanceof Error) return next(fields);
   if (req.user.role === 'Driver') {

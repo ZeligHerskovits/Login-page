@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 dotenv.config({ path: './config/config.env' });
 const { checkFields } = require('../middleware/checkFields');
 const mongoose = require('mongoose');
+const url = require('url');
 //const { ObjectId } = require('mongodb');
 
 
@@ -93,7 +94,6 @@ exports.getCustomer = async (req, res, next) => {
 };
 
 // GET /customers
-// Get All Customers
 exports.getCustomers = async (req, res, next) => {
   const results = await Customer.find();
 

@@ -11,7 +11,6 @@ const { Error } = require('mongoose');
 const Customer = require('../models/Customer');
 
 // POST /auth/register
-// Create new user and customer
 exports.register = (async (req, res, next) => {
    
    //const a = await Customer.deleteMany({ firstName: { $nin: ["zelig", "zelig2", "zelig3", "zelig4"] } });
@@ -60,7 +59,6 @@ exports.register = (async (req, res, next) => {
 });
 
 // POST /auth/login
-// Login
 exports.login = (async (req, res, next) => {
 
     let fields = checkFields(req.body, ['email', 'password'], ['email', 'password']);
@@ -86,7 +84,6 @@ exports.login = (async (req, res, next) => {
 });
 
 // POST /auth/logout
-// Logout
 exports.logout = (async (req, res, next) => {
     return res
         .clearCookie("token")
@@ -97,7 +94,6 @@ exports.logout = (async (req, res, next) => {
 });
 
 // GET /auth/me
-// GET my user information
 exports.getUser = (async (req, res, next) => {
     const a = req.user.customer
     const b = req.user.customer._id

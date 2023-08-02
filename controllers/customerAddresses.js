@@ -4,23 +4,22 @@ const { NotFoundError } = require('../utils/errors');
 const { checkFields } = require('../middleware/checkFields');
 const Zone = require('../models/Zone');
 
-// POST /customersAddresses
+// POST /customersAddress
 exports.createCustomerAddress = async (req, res, next) => {
     const fields = checkFields(req.body, ['customer', 'location'], ['customer', 'location']);
     if (fields instanceof Error) return next(fields);
-    // if (error) return next(error);
-    // error = checkFields(req.body.location, [
-    //     'coordinates',
-    //     'formattedAddress',
-    //     'street',
-    //     'streetLine2',
-    //     'city',
-    //     'state',
-    //     'zipCode',
-    // ]);
-    // if (error) return next(error);
-    // const fields = checkFields(req.body, allowedFields, requiredFields);
-    //     if (fields instanceof Error) return next(fields);
+    if (req.body.location) {
+        fields = checkFields(req.body.location, [
+            'formattedAddress',
+            'street',
+            'streetLine2',
+            'city',
+            'state',
+            'zipCode',
+        ]);
+    }
+    if (fields instanceof Error) return next(fields);
+
     const customerId = req.user.role === 'Dispatcher' ? req.body.customer : req.user.roleObject._id;
 
     if (req.user.role === 'Dispatcher') {
@@ -51,7 +50,7 @@ exports.createCustomerAddress = async (req, res, next) => {
     return res.status(200).json(customerAddress);
 };
 
-// GET /customersAddresses/customerAddress_id
+// GET /customersAddress/customerAddress_id
 exports.getCustomerAddress = async (req, res, next) => {
     let customerAddress = await CustomerAddress.findById(req.params.customerAddress_id);
 
@@ -66,38 +65,36 @@ exports.getCustomerAddress = async (req, res, next) => {
 
 // GET /customersAddresses
 exports.getCustomerAddresses = async (req, res, next) => {
-    const queries = {
-        ...req.query,
-    };
-    if (req.user.role !== 'Dispatcher') {
-        queries.customer = req.user.roleObject._id;
-    }
-    const results = await  CustomerAddress.find();
+    // const queries = {
+    //     ...req.query,
+    // };
+    // if (req.user.role !== 'Dispatcher') {
+    //     queries.customer = req.user.roleObject._id;
+    // }
+    const results = await CustomerAddress.find();
 
     return res.status(200).json(results);
 };
 
-// DELETE /customersAddresses/customerAddress_id
+// DELETE /customersAddress/customerAddress_id
 exports.deleteCustomerAddress = async (req, res, next) => {
-    //const customerAddress = await CustomerAddress.findByIdAndDelete(req.params.customerAddress_id);
-    const customerAddress = (await CustomerAddress.findById(req.params.customerAddress_id)).delete();
 
+    const customerAddress = await CustomerAddress.findByIdAndDelete(req.params.customerAddress_id);
     if (!customerAddress) return next(new NotFoundError('CustomerAddress'));
 
     if (req.user.role !== 'Dispatcher' && req.user.roleObject._id.toString() !== customerAddress.customer.toString()) {
         return next(new NotFoundError('CustomerAddress'));
     }
 
-    return res.status(200).end();
+    return res.status(200).json("This address has been successfully deleted", customerAddress);
 };
 
 // PUT /customersAddresses/customerAddress_id
 exports.updateCustomerAddress = async (req, res, next) => {
-    let error = checkFields(req.body, ['customer', 'location']);
-    if (error) return next(error);
+    let fields = checkFields(req.body, ['customer', 'location']);
+    if (fields instanceof Error) return next(fields);
     if (req.body.location) {
-        error = checkFields(req.body.location, [
-            'coordinates',
+        fields = checkFields(req.body.location, [
             'formattedAddress',
             'street',
             'streetLine2',
@@ -106,7 +103,7 @@ exports.updateCustomerAddress = async (req, res, next) => {
             'zipCode',
         ]);
     }
-    if (error) return next(error);
+    if (fields instanceof Error) return next(fields);
 
     let customerAddress = await CustomerAddress.findById(req.params.customerAddress_id);
     if (!customerAddress) return next(new NotFoundError('CustomerAddress'));

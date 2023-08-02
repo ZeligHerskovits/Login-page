@@ -1,4 +1,5 @@
 exports.allowedStatuses = [
+  'tripCreated',
   'dispatched/waiting-for-driver',
   'driver-assigned',
   //'dispatched', 
@@ -40,15 +41,11 @@ exports.driverAllowedStatuses = [
   tripStatuses.completed,
   tripStatuses.cancelled,
   tripStatuses.driverCancelled,
-  tripStatuses.adminCancelled,
-  tripStatuses.customerCancelled
 ]
 // what driver cannot post in update
 exports.driverUnallowedStatuses = [
   // tripStatuses.dispatched, //driver can un-accept a trip
   tripStatuses.cancelled,
-  tripStatuses.adminCancelled,
-  tripStatuses.customerCancelled,
   tripStatuses.onHold,
   tripStatuses.scheduled,
   tripStatuses.awaitingDriver,
@@ -59,11 +56,4 @@ exports.driverOpenStatuses = [
   tripStatuses.dispatched,
   tripStatuses.accepted,
   tripStatuses.pickedUp,
-]
-
-exports.cancelledStatuses = [
-  tripStatuses.cancelled,
-  tripStatuses.driverCancelled,
-  tripStatuses.adminCancelled,
-  tripStatuses.customerCancelled
 ]

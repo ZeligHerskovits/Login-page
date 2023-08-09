@@ -31,11 +31,11 @@ exports.register = (async (req, res, next) => {
         });
         customer.userObject = user
 
-        const c = await Customer.findOne({ email: req.body.email }).populate('userObject');
+        const c = await Customer.findOne({ email: req.body.email })
         const a = c.userObject._doc.role
         const b = c.userObject._id
         const d = a.role
-        const user2 = await User.findOne({ email: req.body.email }).populate('roleObject');//roleObject we dont need to complete it with data in order to populate it the question is why ?
+        const user2 = await User.findOne({ email: req.body.email })
         const e = user2.roleObject._id
         const f = user2.roleObject._doc.phoneNumber
 
@@ -64,7 +64,7 @@ exports.login = (async (req, res, next) => {
     let fields = checkFields(req.body, ['email', 'password'], ['email', 'password']);
     if (fields instanceof Error) return next(fields);
     const { email, password } = fields;
-    const user = await User.findOne({ email }).select('+password').populate('roleObject');//roleObject we dont need to complete it with data in order to populate it the question is why ?
+    const user = await User.findOne({ email }).select('+password')
     if (!user) return next(new ErrorResponse('Invalid email', 400));
 
     // const isMatch = bcrypt.compare(password, user.password);
@@ -104,7 +104,7 @@ exports.getUser = (async (req, res, next) => {
     const g = req.user.roleObject._id
     const h = req.user.customer.firstName
     //this is not working //req.user.roleObject.lastName = "pljj"
-    const user = await User.findById(req.user._id).populate('roleObject');//roleObject we dont need to complete it with data in order to populate it the question is why ?
+    const user = await User.findById(req.user._id)
     const i = user.roleObject._id
     const j = user.roleObject._doc.lastName
     //this is not working //const m = user.roleObject._doc.lastName = "plm"

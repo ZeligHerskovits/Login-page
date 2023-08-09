@@ -14,7 +14,6 @@ module.exports.insertOrUpdateCustomer = async (req) => {
   let allowedFields = req.url !== '/auth/register' ?
     ['email', 'firstName', 'lastName', 'phoneNumber', 'companyName'] :
     ['email', 'firstName', 'lastName', 'phoneNumber', 'password'];
-  //var variable = 10; var result = (variable === 5) ? "Variable is 5" : ((variable === 10) ? "Variable is 10" : "Variable is not 5 or 10"); console.log(result);
 
   // let requiredFields = req.url !== '/auth/register' ?
   // ['email', 'firstName', 'lastName', 'phoneNumber', 'companyName'] :
@@ -34,7 +33,7 @@ module.exports.insertOrUpdateCustomer = async (req) => {
     requiredFields = ['email', 'firstName', 'lastName', 'phoneNumber', 'password'];
   } 
 
-  console.log("requiredFields..............", requiredFields)
+  console.log("requiredFields..........", requiredFields)
   const fields = checkFields(req.body, allowedFields, requiredFields);
   if (fields instanceof Error) throw fields;
 

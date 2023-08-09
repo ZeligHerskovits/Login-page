@@ -73,16 +73,6 @@ exports.createTrip = async (req, res, next) => {
 exports.getTrip = async (req, res, next) => {
   let trip = await getTripById(req.params.trip_id);
 
-  if (!trip && req.user.role === 'Driver') trip = await Trip.findById(req.params.trip_id)
-    .populate('dropoffAddress')
-    .populate('pickupAddress')
-    //.populate({ path: 'dropoffAddress', populate: { path: 'zone' } })
-    //.populate({ path: 'pickupAddress', populate: { path: 'zone' } })
-    .populate('customer')
-    .populate('driver')
-    .populate('tags')
-    .populate('refToCreatedBy');
-
   if (!trip) return next(new NotFoundError('Trip'));
   console.log("req.user.roleObject._id.toString()......", req.user.roleObject._id.toString())
   console.log("trip.customer._id.toString()......", trip.customer._id.toString())
@@ -255,7 +245,7 @@ exports.updateTrip = async (req, res, next) => {
   await Trip.findByIdAndUpdate(
     req.params.trip_id,
     {
-      ...req.body,
+      //...req.body,
       status: newStatus,
       completedTime,
     },
@@ -277,6 +267,7 @@ exports.updateTrip = async (req, res, next) => {
             timeline: { userid: req.user._id, userRole: req.user.role, updates: array },
           },
           ...(Object.keys(updateObj).length > 0 ? { $set: updateObj } : {}),
+          ...req.body
         }
       );
       console.log('Trip updated successfully.');
@@ -313,7 +304,6 @@ exports.updateTrips = async (req, res, next) => {
     .populate('driver')
     .populate('dropoffAddress')
     .populate('pickupAddress')
-    .populate('tags');
   await Trip.updateMany({ _id: { $in: req.body.trips } }, { ...req.body.values }, { runValidators: true, });
 
   for (let t of trips) {
@@ -334,6 +324,7 @@ exports.updateTrips = async (req, res, next) => {
           timeline: { userid: req.user._id, userrole: req.user.role, updates: array },
         },
         ...(Object.keys(updateObj).length > 0 ? { $set: updateObj } : {}),
+        ...req.body
       });
     }
   }
@@ -343,7 +334,6 @@ exports.updateTrips = async (req, res, next) => {
     .populate('pickupAddress')
     .populate('customer')
     .populate('driver')
-    .populate('tags')
     .populate('refToCreatedBy');
 
   res.status(200).json(trips).end();

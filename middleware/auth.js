@@ -17,7 +17,7 @@ exports.checkToken = (async (req, res, next) => {
 async function decodeFunction(token) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     // I need to remove .populate('customer')
-    const user = await User.findById(decoded.user_id).populate('refToRole').populate('customer').populate('roleObject');//roleObject we dont need to complete it with data in order to populate it the question is why ?
+    const user = await User.findById(decoded.user_id).populate('refToRole').populate('customer')
     if (!user) {
         throw 'no user found';
     }

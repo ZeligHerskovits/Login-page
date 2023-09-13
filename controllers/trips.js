@@ -227,17 +227,6 @@ exports.updateTrip = async (req, res, next) => {
   }
   //since dispatch has to be triggered manually, let's set the status back to driver-assigned to make sure dispatch is triggered and new driver get's notified
 
-  // const formattedDate = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }, { year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', minute: 'numeric', hour12: true }).replace(',', '');
-  // console.log(formattedDate); // Output: 2023-06-05 3:05
-
-  // const moment = require('moment');
-  // const currentDate = new Date();
-  // const utcDate = moment.utc(currentDate).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
-  // const formattedDate = moment.utc(utcDate).local().format('YYYY-MM-DD h:mm');
-
-  // let completedTime = new Date(Date.now()).toString()
-  // console.log(new Date(Date.now()).toISOString());
-
   let completedTime = (trip.status !== tripStatuses['droped-off'] && newStatus == tripStatuses['droped-off']) ? new Date(Date.now()).toISOString() : trip.completedTime || null;
   // if (req.body.tags)
   //   req.body.tags = await Tag.find({ _id: { $in: req.body.tags.map(t => t._id) } });

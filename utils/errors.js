@@ -13,6 +13,14 @@ class MissingRequiredError extends ErrorResponse {
   }
 }
 
+class UnknownError extends ErrorResponse {
+  constructor(error) {
+    super(`Internal Server Error`, 500);
+    this.error = error
+    this.postError()
+  }
+}
+
 class NotFoundError extends ErrorResponse {
   constructor(notFoundResource, status) {
     super(`${notFoundResource} not found`, status ?? 404);
@@ -21,6 +29,7 @@ class NotFoundError extends ErrorResponse {
   }
 }
 
+exports.UnknownError = UnknownError;
 exports.ErrorResponse = ErrorResponse;
 exports.NotFoundError = NotFoundError;
 exports.MissingRequiredError = MissingRequiredError;

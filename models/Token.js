@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+var mongoose_delete = require('mongoose-delete');
 
 const TokenSchema = new mongoose.Schema(
     {
@@ -11,6 +12,10 @@ const TokenSchema = new mongoose.Schema(
             type: String,
             select: false,
         },
+        type: {
+            type: String,
+            enum: ["email","password"]
+          },
         expired: {
             type: Boolean,
             default: false
@@ -24,6 +29,9 @@ const TokenSchema = new mongoose.Schema(
         selectPopulatedPaths: false,
     }
 );
+
+TokenSchema.index({ user: 1});
+TokenSchema.plugin(mongoose_delete, { overrideMethods: true, deletedAt: true, deletedBy: true });
 
 var Token = mongoose.model('Token', TokenSchema);
 module.exports = Token;

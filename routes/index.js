@@ -8,7 +8,10 @@ const {
     login,
     logout,
     register,
-    getUser
+    getUser,
+    reqPassword,
+    setPassword,
+    verifyEmail
 } = require('../controllers/auth');
 
 const {
@@ -58,6 +61,9 @@ const {
 router.post('/auth/register', register);
 router.post('/auth/login', login);
 router.post('/auth/logout', checkToken, logout);
+router.post('/auth/reqpassword', reqPassword);
+router.post('/auth/setpassword', setPassword);
+router.post('auth/verify-email', verifyEmail);
 router.get('/auth/me', checkToken, getUser);
 
 //customers

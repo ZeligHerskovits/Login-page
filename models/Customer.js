@@ -1,19 +1,32 @@
 const mongoose = require('mongoose');
 //const { fullName } = require('../utils/fullName');
 
+// exports.PhoneField = {
+//     type: String,
+//     unique: true,
+//     sparse: true,
+//     match: [/^[0-9]*$/, 'Only number please'],
+//     minlength: [10, 'Must be 10 characters long'],
+//     maxlength: [10, 'Must be 10 characters long'],
+//   };
+
 const CustomerSchema = new mongoose.Schema(
     {
         email: {
             unique: true,
             type: String,
             lowercase: true,
+            //required: [true, 'Email is required'],
+            //match: [/^\w+([\.\+-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please add a valid email'],
         },
         firstName: String,
         lastName: String,
         companyName: String,
         phoneNumber: {
             type: String,
+            //required: [true, 'phoneNumber is required'],
         },
+        //phoneNumber: PhoneField,
         verified: { type: Boolean, default: false },
         // I need to remove this role
         role: {

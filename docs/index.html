@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Trip Control API Docs</title>
+  <link rel="stylesheet" href="https://unpkg.com/docute@4/dist/docute.css">
+</head>
+
+<body>
+  <div id="docute"></div>
+  <script src="https://unpkg.com/docute@4/dist/docute.js"></script>
+  <!-- <script src="_docs-targets.js"></script> -->
+  <script>
+    new Docute({
+      target: '#docute',
+      sourcePath: './src/',
+      darkThemeToggler: true,
+      detectSystemDarkTheme: true,
+      highlight: ['markdown', 'typescript', 'bash', 'json', 'php'],
+      title: 'Docs',
+
+      sidebar: [
+        {
+          title: 'Trip Control API',
+          children: [
+            {
+              title: 'Introduction',
+              link: '/introduction'
+            },
+            {
+              title: 'Authentication',
+              link: '/authentication'
+            },
+            {
+              title: 'Filters, Queries, & joins',
+              link: '/filters'
+            },
+            {
+              title: 'Customers',
+              link: '/customers'
+            },
+            {
+              title: 'Customers Addresses',
+              link: '/customersAddresses'
+            },
+            {
+              title: 'Drivers',
+              link: '/drivers'
+            },
+            {
+              title: 'Trips',
+              link: '/trips'
+            },
+            {
+              title: 'Errors',
+              link: '/errors'
+            },
+            {
+              title: 'Sockets',
+              link: '/sockets'
+            },
+          ]
+        },
+
+        // An external link
+        {
+          title: 'amazon',
+          link: 'https:amazon.com'
+        }
+      ]
+    })
+  </script>
+</body>
+
+</html>

@@ -11,9 +11,9 @@ const url = require('url');
 
 module.exports.insertOrUpdateCustomer = async (req) => {
   
-  let allowedFields = req.url !== '/auth/register' ?
-    ['email', 'firstName', 'lastName', 'phoneNumber', 'companyName'] :
-    ['email', 'firstName', 'lastName', 'phoneNumber', 'password'];
+  let allowedFields = ['email', 'password', 'firstName', 'lastName', 'phoneNumber', 'companyName'] //req.url !== '/auth/register' ?
+    //:
+   // ['email', 'password'];
 
   // let requiredFields = req.url !== '/auth/register' ?
   // ['email', 'firstName', 'lastName', 'phoneNumber', 'companyName'] :
@@ -27,13 +27,13 @@ module.exports.insertOrUpdateCustomer = async (req) => {
 
   if (req.url !== '/auth/register' && req.method === 'PUT') {
     requiredFields = [];
-  } else if (req.url !== '/auth/register') {
+  } else if (req.url !== '/auth/register' && req.method === 'POST') {
     requiredFields = ['email', 'firstName', 'lastName', 'phoneNumber', 'companyName'];
-  } else if (req.method !== 'PUT') {
-    requiredFields = ['email', 'firstName', 'lastName', 'phoneNumber', 'password'];
+  } else if (req.url === '/auth/register') {
+    requiredFields = ['email', 'password', 'firstName', 'lastName', 'phoneNumber', 'companyName'];
   } 
 
-  console.log("requiredFields..........", requiredFields)
+  console.log("requiredFields..", requiredFields)
   const fields = checkFields(req.body, allowedFields, requiredFields);
   if (fields instanceof Error) throw fields;
 

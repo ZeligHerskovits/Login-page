@@ -3,41 +3,16 @@ const jwt = require('jsonwebtoken');
 const dotenv = require("dotenv");
 dotenv.config({ path: './config/config.env' });
 
-// exports.PhoneField = {
-//     type: String,
-//     unique: true,
-//     sparse: true,
-//     match: [/^[0-9]*$/, 'Only number please'],
-//     minlength: [10, 'Must be 10 characters long'],
-//     maxlength: [10, 'Must be 10 characters long'],
-//   };
-
 const UserSchema = new mongoose.Schema(
     {
         email: {
             unique: true,
             type: String,
             lowercase: true,
-            //required: [true, 'Email is required'],
-            //match: [/^\w+([\.\+-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please add a valid email'],
         },
-        firstName: String,
-        lastName: String,
-        phoneNumber: {
-            type: String,
-            //required: [true, 'phoneNumber is required'],
-        },
-        //phoneNumber: PhoneField,
         password: {
             type: String,
             select: false,
-        },
-        verified: { type: Boolean, default: false },
-        // I need to remove this customer 
-        customer: {
-            type: mongoose.Types.ObjectId,
-            ref: 'Customer',
-            //required: true,
         },
         refToRole: {
             type: mongoose.Types.ObjectId,
@@ -49,6 +24,9 @@ const UserSchema = new mongoose.Schema(
             enum: ['Customer', 'Dispatcher', 'Driver'],
             default: 'Customer',
         },
+        lastLogOut: Date,
+        forcedLogOut: Date,
+        verified: { type: Boolean, default: false }
     },
 
     {
@@ -58,7 +36,7 @@ const UserSchema = new mongoose.Schema(
         selectPopulatedPaths: false,
     }
 );
-
+// a virtual field I dont need to populate in order to get the data from it
 UserSchema.virtual('roleObject', {
     ref: function () {
         return this.role;

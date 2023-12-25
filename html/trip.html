@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Messenger Trip Creation</title>
+    <link rel="stylesheet" href="/css/trip.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <form action="http://localhost:3000/trip" method="post">
+            <h2>Create a Messenger Trip</h2>
+
+            <div class="input-group">
+                <label for="start">Pickup Address:</label>
+                <input type="text" id="start" name="start" placeholder="Enter pickup address"required>
+                <label for="destination">Drop-off Address:</label>
+                <input type="text" id="destination" name="destination" placeholder="Enter drop-off address"required>
+                <label for="pickupName">Pickup Name:</label>
+                <input type="text" id="pickupName" name="pickupName" placeholder="Enter pickup name"required>
+                <label for="dropoffName">Drop-off Name:</label>
+                <input type="text" id="dropoffName" name="dropoffName" placeholder="Enter drop-off name"required>
+                <label for="pickupPhoneNumber">Pickup Phone Number:</label>
+                <input type="text" id="pickupPhoneNumber" name="pickupPhoneNumber" placeholder="Enter pickup phone number"required>
+                <label for="dropoffPhoneNumber">Drop-off Phone Number:</label>
+                <input type="text" id="dropoffPhoneNumber" name="dropoffPhoneNumber" placeholder="Enter drop-off phone number"required>
+                <label for="pickupNote">Pickup Note:</label>
+                <textarea id="pickupNote" name="pickupNote" placeholder="Enter pickup note"></textarea>
+                <label for="dropoffNote">Drop-off Note:</label>
+                <textarea id="dropoffNote" name="dropoffNote" placeholder="Enter drop-off note"></textarea>
+                <label for="numberOfPackages">Number of Packages:</label>
+                <input type="number" id="numberOfPackages" name="numberOfPackages"
+                    placeholder="Enter number of packages"required>
+                <label for="packageType">Package Type:</label>
+                <select id="packageType" name="packageType">
+                    <option value="Bag">Bag</option>
+                    <option value="Box">Box</option>
+                    <option value="Invitation">Invitation</option>
+                    <option value="Luggage">Luggage</option>
+                    <option value="Envelope">Envelope</option>
+                    <option value="Flower">Flower</option>
+                    <option value="GiftArrangement">Gift Arrangement</option>
+                    <option value="GarmentBag">Garment Bag</option>
+                    <option value="OpenWrap">Open Wrap</option>
+                    <option value="Delicate">Delicate</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <button type="submit" class="create-trip-btn">Create Trip</button>
+        </form>
+        <div class="trip-list">
+            <h3>Your Trips</h3>
+            <ul id="tripList">
+                <!-- Trips will be displayed here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Google Maps -->
+    <div id="map"></div>
+
+    <script>
+        function createTrip() {
+            // Logic to create a trip (to be implemented)
+            // You can collect data from the form and update the trip list dynamically
+            alert('Trip created!'); // Placeholder for actual logic
+        }
+    </script>
+
+    <!-- Include Google Maps API -->
+    <script defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfWwwyoL6SvDMefnll4qu6K69YU8s9PIA&libraries=places&callback=initMap">
+        </script>
+    <script>
+        // Google Maps initialization
+        function initMap() {
+            // You can customize the map initialization here
+            const map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 0, lng: 0 },
+                zoom: 2,
+            });
+
+            // Example: You can add markers for the starting point and destination
+            const startMarker = new google.maps.Marker({
+                position: { lat: 0, lng: 0 },
+                map: map,
+                title: 'Pickup Address',
+            });
+
+            const destinationMarker = new google.maps.Marker({
+                position: { lat: 0, lng: 0 },
+                map: map,
+                title: 'Drop-off Address',
+            });
+
+            // Example: You can use the Places API to autocomplete the input fields
+            const startAutocomplete = new google.maps.places.Autocomplete(document.getElementById('start'));
+            const destinationAutocomplete = new google.maps.places.Autocomplete(document.getElementById('destination'));
+
+            // Example: You can listen for place changes to update markers
+            startAutocomplete.addListener('place_changed', function () {
+                const place = startAutocomplete.getPlace();
+                startMarker.setPosition(place.geometry.location);
+                map.panTo(place.geometry.location);
+            });
+
+            destinationAutocomplete.addListener('place_changed', function () {
+                const place = destinationAutocomplete.getPlace();
+                destinationMarker.setPosition(place.geometry.location);
+                map.panTo(place.geometry.location);
+            });
+        }
+    </script>
+
+</body>
+
+</html>

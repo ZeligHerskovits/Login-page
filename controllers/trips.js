@@ -65,7 +65,7 @@ exports.createTrip = async (req, res, next) => {
 
   trip = await getTripById(trip._id);
 
-  res.status(200).json(trip);//.end();
+  return res.status(200).json(trip);//.end();
 
 };
 

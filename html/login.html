@@ -2,35 +2,36 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <title>Login Page</title>
-  <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Rubik:400,700'>
-  <link rel="stylesheet" href="/css/style.css">
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Rubik:400,700'>
+    <link rel="stylesheet" href="/css/login.css">
 </head>
 
 <body>
-  <div class="login-form">
-    <form action="http://localhost:3000/auth/login" method="post">
-      <h1>Login</h1>
-      <div class="content">
-        <div class="input-field">
-          <input type="email" name="email" placeholder="Email" autocomplete="nope" required>
-        </div>
-        <div class="input-field">
-          <input type="password" name="password" placeholder="Password" autocomplete="new-password" required>
-        </div>
-      </div>
-      <div class="action">
-        <button class="register-link">Don't have an account? <a href="register.html">Register</a></button>
-      </div>
-      <br>
-      <div>
-        <button type="submit" class="login-btn">Login</button>
-      </div>
-    </form>
-    <form action="http://localhost:3000/auth/logout" method="post"><button class="logout-btn">Log out</button></form>
-  </div>
-  <script src="./script.js"></script>
+    <div class="login-form">
+        <form action="http://localhost:3000/auth/login" method="post">
+            <h1>Login</h1>
+            <div class="content">
+                <div class="input-field">
+                    <input type="email" name="email" placeholder="Email" autocomplete="nope" required>
+                </div>
+                <div class="input-field">
+                    <input type="password" name="password" placeholder="Password" autocomplete="new-password" required>
+                </div>
+            </div>
+            <div class="action">
+                <button class="register-link">Don't have an account? <a href="register.html">Register</a></button>
+            </div>
+            <br>
+            <div>
+                <button type="submit" class="login-btn">Login</button>
+            </div>
+        </form>
+        <form action="http://localhost:3000/auth/logout" method="post"><button class="logout-btn">Log out</button>
+        </form>
+    </div>
+    <script src="./script.js"></script>
 </body>
 
 </html>

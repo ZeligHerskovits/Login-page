@@ -35,13 +35,13 @@ exports.register = (async (req, res, next) => {
     const token = crypto.randomBytes(32).toString("hex");
     await Token.create({ token: token, user: user._id, type: "email" });
     console.log("token.....", token)
-    sendEmail({
-      to: req.body.email,
-      subject: 'Thank you for signing up!',
-      html: `<a href="localhost:3000/auth/verify-email?token=${token}">Click here to verify your email</a>`
-    });
+    // sendEmail({
+    //   to: req.body.email,
+    //   subject: 'Thank you for signing up!',
+    //   html: `<a href="localhost:3000/auth/verify-email?token=${token}">Click here to verify your email</a>`
+    // });
 
-    return res.status(200).json(user);
+    return res.status(200).json("Email: " + user.email + ' - ' + "Role: " + user.role)
   }
   catch (e) {
     // if (e.code === 11000 && e.message.includes("duplicate key error")) {
@@ -134,11 +134,11 @@ exports.reqPassword = async (req, res, next) => {
     let html = 'Password reset request <br>'
       + `<a href="${path}?token=${resetToken}">set password</a> <br>`
       + `<p>this link will expire in 15 minutes</p>`;
-    await sendEmail({
-      to: req.body.email,
-      subject: 'Password Request',
-      html: html
-    });
+    // await sendEmail({
+    //   to: req.body.email,
+    //   subject: 'Password Request',
+    //   html: html
+    // });
 
     // delete this token after expire time
     res.status(200).send();

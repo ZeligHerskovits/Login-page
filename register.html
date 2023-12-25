@@ -1,12 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
       font-family: Arial, Helvetica, sans-serif;
-      background-color: black;
+      background-color: #646161;
+      color: white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
 
     * {
@@ -16,39 +23,47 @@
     /* Add padding to containers */
     .container {
       padding: 16px;
-      background-color: white;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
     }
 
     /* Full-width input fields */
     input[type=text],
-    input[type=password] {
+    input[type=password],
+    input[type=tel] {
       width: 100%;
-      padding: 15px;
-      margin: 5px 0 22px 0;
+      padding: 12px;
+      margin: 8px 0;
       display: inline-block;
-      border: none;
-      background: #f1f1f1;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      border-radius: 4px;
     }
 
     input[type=text]:focus,
-    input[type=password]:focus {
-      background-color: #ddd;
+    input[type=password]:focus,
+    input[type=tel]:focus {
       outline: none;
+      border: 2px solid #04AA6D;
     }
 
     /* Overwrite default styles of hr */
     hr {
-      border: 1px solid #f1f1f1;
-      margin-bottom: 25px;
+      border: 0.5px solid #f1f1f1;
+      margin-bottom: 16px;
     }
 
     /* Set a style for the submit button */
     .registerbtn {
       background-color: #04AA6D;
       color: white;
-      padding: 16px 20px;
-      margin: 8px 0;
+      padding: 14px 20px;
+      margin-top: 16px;
       border: none;
+      border-radius: 4px;
       cursor: pointer;
       width: 100%;
       opacity: 0.9;
@@ -65,8 +80,13 @@
 
     /* Set a grey background color and center the text of the "sign in" section */
     .signin {
-      background-color: #f1f1f1;
       text-align: center;
+      margin-top: 16px;
+      color: black;
+    }
+
+    h1 {
+      color: black; /* Change this color to black */
     }
   </style>
 </head>
@@ -79,11 +99,17 @@
       <p>Please fill in this form to create an account.</p>
       <hr>
 
-      <label for="frtName"><b>FirstName</b></label>
-      <input type="text" placeholder="Enter firstName" name="firstName" id="frtName" required>
+      <label for="frtName"><b>First Name</b></label>
+      <input type="text" placeholder="Enter First Name" name="firstName" id="frtName" required>
 
-      <label for="lastName"><b>LastName</b></label>
-      <input type="text" placeholdr="Enter lastName" name="lastName" id="lstName" required>
+      <label for="lastName"><b>Last Name</b></label>
+      <input type="text" placeholder="Enter Last Name" name="lastName" id="lstName" required>
+
+      <label for="phoneNumber"><b>Phone Number</b></label>
+      <input type="tel" placeholder="Enter Phone Number" name="phoneNumber" id="phoneNumber" required>
+
+      <label for="comName"><b>Company Name</b></label>
+      <input type="text" placeholder="Enter Company Name" name="companyName" id="comName" required>
 
       <label for="email"><b>Email</b></label>
       <input type="text" placeholder="Enter Email" name="email" id="email" required>
@@ -91,14 +117,11 @@
       <label for="password"><b>Password</b></label>
       <input type="password" placeholder="Enter Password" name="password" id="password" required>
 
-      <label for="password-repeat"><b>Repeat Password</b></label>
-      <input type="password" placeholder="Repeat Password" name="password-repeat" id="password-repeat" required>
-
       <button type="submit" class="registerbtn">Register</button>
     </div>
 
     <div class="container signin">
-      <p>Already have an account? <a href="login.html">Sign in</a>.</p>
+      <p>Already have an account?&nbsp;&nbsp;<a href="login.html">Sign in</a>.</p>
     </div>
   </form>
 

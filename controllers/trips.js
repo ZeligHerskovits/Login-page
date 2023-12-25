@@ -6,7 +6,7 @@ const CustomerAddress = require('../models/CustomerAddress');
 const Customer = require('../models/Customer');
 const Driver = require('../models/Driver');
 const { checkFields } = require('../middleware/checkFields');
-const { allowedStatuses, driverAllowedStatuses, tripStatuses, driverOpenStatuses, driverUnallowedStatuses, cancelledStatuses } = require('../constants/allowedStatuses');
+const { allowedStatuses, driverAllowedStatuses, tripStatuses, driverOpenStatuses, driverUnallowedStatuses } = require('../constants/allowedStatuses');
 
 let allowedFields = [
   'pickupAddress', 'dropoffAddress', 'tripScheduleTime',
@@ -342,11 +342,14 @@ async function timeline(updates, trip, array, updateObj) {
       value = value.toString();
       temp = temp.toString();
     }
-    // if (Array.isArray(value)) {
-    //   value.forEach(v => {
-    //     if (!temp.includes(v)) array.push({ field: key, value: v });
-    //   })
-    // }
+    if (Array.isArray(value)) {
+      value.forEach(v => {
+        if (!temp.find(t => t._id === v._id) && !temp.includes(v)) array.push({ field: key, value: v });
+        //if(!value.some(v => v === temp))
+
+       // if (!temp.includes(v)) array.push({ field: key, value: v });
+      })
+    }
     else {
       if ((temp?._id || temp) != (value?._id || value)) {
         // if (typeof value === 'object' && value) {

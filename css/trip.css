@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
+    background-color:  #99cab7;
     margin: 0;
     padding: 0;
     display: flex;
@@ -18,6 +18,12 @@ body {
     width: 400px;
     text-align: center;
     margin-right: 20px;
+    
+    /* Ensure the container does not touch the top */
+    margin-top: 10px; /* You can adjust the value according to your preference */
+
+    /* Position the container on the left side */
+    margin-left: 20;
 }
 
 label {
@@ -43,6 +49,50 @@ button {
     cursor: pointer;
     font-size: 16px;
 }
+
+.required {
+    color: red;
+    margin-left: 3px;
+    /* Adjust the spacing as needed */
+}
+
+
+.input-group {
+    position: relative;
+}
+
+.error-message {
+    position: absolute;
+    bottom: 0;
+    color: red;
+    font-size: 0.8em;
+    margin-top: 5px;
+    /* Adjust the margin as needed */
+}
+
+
+/* .error-message {
+    color: red;
+    font-size: 0.8em;
+    position: absolute;
+    top: 100%;
+    left: 0;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 10px;
+    
+} */
+
+
+
+
+
+/* .input-group label, .input-group input, .input-group select, .input-group textarea {
+    margin: 0;
+    padding: 0;
+} */
 
 button:hover {
     background-color: #45a049;

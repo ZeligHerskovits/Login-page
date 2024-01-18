@@ -41,7 +41,7 @@ exports.register = (async (req, res, next) => {
     //   html: `<a href="localhost:3000/auth/verify-email?token=${token}">Click here to verify your email</a>`
     // });
 
-    return res.status(200).json("Email: " + user.email + ' - ' + "Role: " + user.role)
+    return res.status(200).json("You successfully get registered " + "Email: " + user.email + ' - ' + "Role: " + user.role)
   }
   catch (e) {
     // if (e.code === 11000 && e.message.includes("duplicate key error")) {
@@ -67,6 +67,11 @@ exports.login = (async (req, res, next) => {
   // if (!isMatch) return next(new ErrorResponse('Invalid password', 400));
 
   const token = user.getSignedJwtToken();
+  //res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_ORIGIN || '*');
+  // res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  // res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // res.setHeader('Access-Control-Allow-Credentials', 'true');
+  // res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
 
   return res
     .cookie("token", token, {

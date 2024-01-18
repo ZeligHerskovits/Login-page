@@ -13,6 +13,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+const cors = require('cors');
+app.use(cors());
 //const http = require('http');
 //const server = http.createServer(app);
 const path = require('path');

@@ -1,5 +1,11 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+// const express = require('express');
+// const app = express();
+// const cookieParser = require('cookie-parser');
+// app.use(cookieParser());
+// const cors = require('cors');
+// app.use(cors());
 
 exports.checkToken = (async (req, res, next) => {
     try {

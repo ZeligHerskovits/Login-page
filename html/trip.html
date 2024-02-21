@@ -45,14 +45,13 @@
 
             <div class="input-group">
                 <label for="pickupPhone">Pickup Phone Number:<span class="required">*</span></label>
-                <input type="text" id="pickupPhone" name="pickupPhone" placeholder="Enter pickup phone number" required>
+                <input type="text" id="pickupPhone" name="pickupPhone" placeholder="Enter pickup phone number" required pattern="[0-9]+">
                 <div class="error-message" id="pickupPhoneError"></div>
             </div>
-
+            
             <div class="input-group">
                 <label for="dropoffPhone">Drop-off Phone Number:<span class="required">*</span></label>
-                <input type="text" id="dropoffPhone" name="dropoffPhone" placeholder="Enter drop-off phone number"
-                    required>
+                <input type="text" id="dropoffPhone" name="dropoffPhone" placeholder="Enter drop-off phone number" required pattern="[0-9]+">
                 <div class="error-message" id="dropoffPhoneError"></div>
             </div>
 
@@ -93,7 +92,7 @@
                 <div class="error-message" id="packageTypeError"></div>
             </div>
 
-            <button type="button" class="create-trip-btn" onclick="sendCookieToBe()">Schedule Trip</button>
+            <button type="button" class="create-trip-btn" onclick="createMyTrip()">Schedule Trip</button>
             <!-- <button type="button" onclick="createTrip()">Create Trip</button> -->
         </form>
         <!-- </form> -->
@@ -109,17 +108,46 @@
 
     <script>
 
-        function sendCookieToBe() {
-
-            document.cookie = "token=myFakeTokenValue";
-            console.log("test............", document.cookie)
+        async function createMyTrip() {
 
             resetErrorMessages();
             const form = document.getElementById('tripForm');
+
+            // Assuming you have retrieved the token from localStorage
+            const token = localStorage.getItem('token');
+            if(!token){alert('No token provided, pls login and try again');}
             if (!form.checkValidity()) {
                 displayFieldErrors();
             } else {
-                form.submit();
+
+                const formData = new FormData(form);
+                const fetchOptions = {
+                    method: form.method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`, 'check': 'google'
+                    },
+                    body: new URLSearchParams(formData),
+                };
+
+                try {
+                    const response = await fetch(form.action, fetchOptions);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`Error: ${errorData.error}`);
+                    }
+                    const data = await response.json();
+                    console.log(data);
+                    alert('Trip successfully created!');
+                    // You may redirect or update UI based on the response
+                } catch (error) {
+                    error.message.includes("jwt expired") ? 
+                    alert(`${error.message},  Please login and try again. Visit http://127.0.0.1:5500/html/login.html to login.`) :
+                    error.message.includes("There is no such a address like this saved") ?  
+                    alert(`Error during form submission pls fix and try again,  ${error.message}. Visit http://127.0.0.1:5500/html/customerAddress.html to create address.`): 
+                    alert(`Error during form submission pls fix and try again,  ${error.message}`);
+
+                    console.error('Error during form submission:', error.message);
+                }
             }
         }
 
@@ -130,46 +158,51 @@
         }
 
         function displayFieldErrors() {
-            // Display error messages for each invalid field
-            const requiredInputs = document.querySelectorAll('input[required]');
-            requiredInputs.forEach(input => {
-                const errorDiv = document.getElementById(`${input.id}Error`);
-                if (!input.validity.valid) {
-                    errorDiv.textContent = `${input.labels[0].textContent.toLowerCase()} is required`;
-                }
-            });
-        }
-
-        async function createTrip() {
-            const token = "YOUR_TOKEN_HERE"; // Replace with your actual token
-
-            const form = document.getElementById("tripForm");
-            //form.submit();
-            if (!form.checkValidity()) {
-                console.error("Form is not valid");
-                return;
-            }
-            const formData = new FormData(form);
-
-            try {
-                const response = await fetch("http://localhost:3000/trip", {
-                    method: "POST",
-                    headers: {
-                        "Cookie": `token=${token}`, // Include your token in the Cookie header
-                    },
-                    body: formData,
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log("Trip created:", data);
-                } else {
-                    console.error("Failed to create trip");
-                }
-            } catch (error) {
-                console.error("Error:", error);
+    // Display error messages for each invalid field
+    const requiredInputs = document.querySelectorAll('input[required], input[pattern]');
+    requiredInputs.forEach(input => {
+        const errorDiv = document.getElementById(`${input.id}Error`);
+        if (!input.validity.valid) {
+            if (input.validity.patternMismatch) {
+                errorDiv.textContent = `You can only enter numbers for ${input.labels[0].textContent.toLowerCase()} field`;
+            } else {
+                errorDiv.textContent = `${input.labels[0].textContent} is required`;
             }
         }
+    });
+}
+
+
+        // async function createTrip() {
+        //     const token = "YOUR_TOKEN_HERE"; // Replace with your actual token
+
+        //     const form = document.getElementById("tripForm");
+        //     //form.submit();
+        //     if (!form.checkValidity()) {
+        //         console.error("Form is not valid");
+        //         return;
+        //     }
+        //     const formData = new FormData(form);
+
+        //     try {
+        //         const response = await fetch("http://localhost:3000/trip", {
+        //             method: "POST",
+        //             headers: {
+        //                 "Cookie": `token=${token}`, // Include your token in the Cookie header
+        //             },
+        //             body: formData,
+        //         });
+
+        //         if (response.ok) {
+        //             const data = await response.json();
+        //             console.log("Trip created:", data);
+        //         } else {
+        //             console.error("Failed to create trip");
+        //         }
+        //     } catch (error) {
+        //         console.error("Error:", error);
+        //     }
+        // }
     </script>
 
     <!-- Include Google Maps API -->
@@ -238,7 +271,6 @@
                     }
                 );
             }
-
         }
     </script>
 

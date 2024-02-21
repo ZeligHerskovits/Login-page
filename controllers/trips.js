@@ -26,9 +26,27 @@ exports.createTrip = async (req, res, next) => {
       req.user.role === 'Dispatcher' ? req.body.customer : req.user.roleObject._id;
   }
 
+  async function findAddressId(address) {
+    const addressParts = address.split(',');
+    const street = addressParts[0] ? addressParts[0].trim() : '';;
+    const city = addressParts[1] ? addressParts[1].trim() : '';
+    const foundAddress = await CustomerAddress.findOne({
+      $and: [
+        { 'location.street': { $regex: new RegExp(street, 'i') } },
+        { 'location.city': { $regex: new RegExp(city, 'i') } }
+      ]
+    });
+
+    return foundAddress ? foundAddress._doc._id.toString() : next(new ErrorResponse('There is no such a address like this saved, pls create this address and try again', 500));
+  }
+
+  const { pickupAddress, dropoffAddress } = req.body;
+  const pickupId = await findAddressId(pickupAddress);
+  const dropoffId = await findAddressId(dropoffAddress);
+
   let promises = await Promise.all([
-    req.body.dropoffAddress ? CustomerAddress.find({ _id: req.body.dropoffAddress }) : '',
-    req.body.pickupAddress ? CustomerAddress.find({ _id: req.body.pickupAddress }) : '',
+    dropoffId ? CustomerAddress.find({ _id: dropoffId }) : '',
+    pickupId ? CustomerAddress.find({ _id: pickupId }) : '',
     req.body.customer && req.user.role === 'Dispatcher' ? Customer.findById(req.body.customer) : req.user.roleObject._id,
     req.body.driver ? Driver.findById(req.body.driver) : 1
   ]);
@@ -44,6 +62,9 @@ exports.createTrip = async (req, res, next) => {
   }
 
   const today = new Date();
+  req.body.pickupAddress = pickupId
+  req.body.dropoffAddress = dropoffId
+  
   let trip = await Trip.create({
     ...req.body,
     createdByUserRole: req.user.role,
@@ -347,7 +368,7 @@ async function timeline(updates, trip, array, updateObj) {
         if (!temp.find(t => t._id === v._id) && !temp.includes(v)) array.push({ field: key, value: v });
         //if(!value.some(v => v === temp))
 
-       // if (!temp.includes(v)) array.push({ field: key, value: v });
+        // if (!temp.includes(v)) array.push({ field: key, value: v });
       })
     }
     else {

@@ -10,7 +10,7 @@ const CustomerAddressSchema = new mongoose.Schema(
     location: {
       formattedAddress: {
         type: String,
-        required: [true, 'formattedAddress is required']
+        //required: [true, 'formattedAddress is required']
         // required: function () {
         //   // bug in mongoose this is not set to model when udpating, so we can't validate on update
         //   if (this === global) return false;

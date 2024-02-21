@@ -6,13 +6,12 @@ const Zone = require('../models/Zone');
 
 // POST /customersAddress
 exports.createCustomerAddress = async (req, res, next) => {
-    const fields = checkFields(req.body, ['customer', 'location'], ['customer', 'location']);
+    let fields = checkFields(req.body, ['customer', 'location'], ['customer', 'location']);
     if (fields instanceof Error) return next(fields);
     if (req.body.location) {
         fields = checkFields(req.body.location, [
             'formattedAddress',
             'street',
-            'streetLine2',
             'city',
             'state',
             'zipCode',
@@ -20,14 +19,24 @@ exports.createCustomerAddress = async (req, res, next) => {
     }
     if (fields instanceof Error) return next(fields);
 
-    const customerId = req.user.role === 'Dispatcher' ? req.body.customer : req.user.roleObject._id;
-
+    const { customerName, customerEmail } = req.body;
+    let customerId;
     if (req.user.role === 'Dispatcher') {
-        const customer = await Customer.findById(req.body.customer);
-
+        const customer = await Customer.findOne({
+            $or: [
+                { name: { $regex: new RegExp(customerName, 'i') } },
+                { email: { $regex: new RegExp(customerEmail, 'i') } }
+            ]
+        });
+        
         if (!customer) {
-            return next(new NotFoundError('Customer', 400));
+            return next(new NotFoundError('Customer not found', 400));
         }
+
+        customerId = customer._id;
+    }
+    else {
+        customerId = req.user.roleObject._id;
     }
 
     if (!req.body.location.formattedAddress) {
@@ -97,7 +106,6 @@ exports.updateCustomerAddress = async (req, res, next) => {
         fields = checkFields(req.body.location, [
             'formattedAddress',
             'street',
-            'streetLine2',
             'city',
             'state',
             'zipCode',

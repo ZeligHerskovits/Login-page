@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Customer Address</title>
+    <link rel="stylesheet" href="/css/customerAddress.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Create Customer Address</h2>
+        <form id="createAddressForm">
+            <label for="customerName">Customer Name: (For dispatcher only)</label>
+            <input type="text" id="customerName" name="customerName" required>
+            <label for="customerEmail">Customer Email:  (For dispatcher only)</label>
+            <input type="email" id="customerEmail" name="customerEmail" required>
+            <label for="formattedAddress">Formatted Address: (optianol)</label>
+            <input type="text" id="formattedAddress" name="formattedAddress" required>
+            <label for="street">Street:</label>
+            <input type="text" id="street" name="street" required>
+            <label for="city">City:</label>
+            <input type="text" id="city" name="city" required>
+            <label for="state">State:</label>
+            <input type="text" id="state" name="state" required>
+            <label for="zipCode">Zip Code:</label>
+            <input type="text" id="zipCode" name="zipCode" required>
+            <button type="submit">Create Address</button>
+        </form>
+    </div>
+</body>
+
+</html>

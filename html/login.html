@@ -40,83 +40,33 @@
             console.log([...formData.entries()]);
 
             try {
-                document.getElementById('loginForm').addEventListener('submit', async function (event) {
-                    event.preventDefault(); // Prevent the form from submitting
-
-                    const form = document.getElementById("loginForm");
-                    const formData = new FormData(form);
-                    console.log([...formData.entries()]);
-
-                    try {
-                        const response = await fetch('http://localhost:3000/auth/login', {
-                            method: 'POST',
-                            body: new URLSearchParams(formData),
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded', // or 'multipart/form-data'
-                            },
-                            //credentials: 'include',  // Include this line
-                        });
-
-
-
-                        // // // const setCookieHeader = response.headers.get('Set-Cookie');
-
-                        // // // if (setCookieHeader) {
-                        // // //     // Extract the 'token' value from the 'Set-Cookie' header
-                        // // //     const tokenMatch = setCookieHeader.match(/token=([^;]+)/);
-
-                        // // //     if (tokenMatch) {
-                        // // //         const tokenValue = tokenMatch[1];
-
-                        // // //         // Now you can use tokenValue as needed
-                        // // //         console.log('Token value:', tokenValue);
-                        // // //     } else {
-                        // // //         console.warn('Token not found in Set-Cookie header.');
-                        // // //     }
-                        // // // } else {
-                        // // //     console.warn('Set-Cookie header not found in the response.');
-                        // // // }
-
-
-
-                        const data = await response.json();
-
-                        if (data.error != undefined || data.message == undefined) {
-                            const errorMessageElement = document.getElementById('error-message');
-                            errorMessageElement.textContent = `Your login failed because you entered a ${data.error}` || 'Login failed.';
-                        } else {
-
-
-
-
-
-                            // // // // Extract the 'token' cookie
-                            // // const tokenCookie = document.cookie
-                            // //     .split(';')
-                            // //     .map(cookie => cookie.trim())
-                            // //     .find(cookie => cookie.startsWith('token='));
-
-                            // // // Extract the value of the 'token' cookie
-                            // // const tokenValue = tokenCookie ? tokenCookie.split('=')[1] : null;
-
-                            // // // Use tokenValue as needed, for example, log it to the console
-                            // // console.log('Token value:', tokenValue);
-
-
-
-
-
-                            // If login is successful, redirect to trip.html
-                            window.location.href = 'trip.html';
-                        }
-                    } catch (error) {
-                        console.error('Error during login:', error);
-                    }
+                const response = await fetch('http://localhost:3000/auth/login', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded', // or 'multipart/form-data'
+                    },
+                    //credentials: 'include',  // Include this line
                 });
 
+                const data = await response.json();
+
+                if (data.error != undefined || data.message == undefined) {
+                    const errorMessageElement = document.getElementById('error-message');
+                    //errorMessageElement.textContent = `${data.error} please try again` || 'Login failed.';
+                     errorMessageElement.textContent = `Your login failed because you entered a ${data.error}` || 'Login failed.';
+                } else {
+
+                    localStorage.setItem('token', data.token);
+
+                    // If login is successful, redirect to trip.html
+                    window.location.href = 'trip.html';
+                }
             } catch (error) {
+                alert('Error during login:', error);
                 console.error('Error during login:', error);
             }
+
         });
 
     </script>

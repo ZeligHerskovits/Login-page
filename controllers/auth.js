@@ -67,11 +67,6 @@ exports.login = (async (req, res, next) => {
   // if (!isMatch) return next(new ErrorResponse('Invalid password', 400));
 
   const token = user.getSignedJwtToken();
-  //res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_ORIGIN || '*');
-  // res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  // res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  // res.setHeader('Access-Control-Allow-Credentials', 'true');
-  // res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
 
   return res
     .cookie("token", token, {
@@ -80,7 +75,7 @@ exports.login = (async (req, res, next) => {
       httpOnly: true,
     })
     .status(200)
-    .json({ message: "Logged in successfully" });
+    .json({ token: token, message: "Logged in successfully" });
   //res.header('x-user-token', token).status(200).send('You have sucsesfully loged in')
 });
 
@@ -237,6 +232,7 @@ exports.changePassword = async (req, res, next) => {
 
   sendTokenResponse(user, res);
 };
+
 
 
 // web sockets is still in process to complet

@@ -11,17 +11,7 @@ const url = require('url');
 
 module.exports.insertOrUpdateCustomer = async (req) => {
   
-  let allowedFields = ['email', 'password', 'firstName', 'lastName', 'phoneNumber', 'companyName'] //req.url !== '/auth/register' ?
-    //:
-   // ['email', 'password'];
-
-  // let requiredFields = req.url !== '/auth/register' ?
-  // ['email', 'firstName', 'lastName', 'phoneNumber', 'companyName'] :
-  // req.method !== 'PUT' ?
-  // ['email', 'firstName', 'lastName', 'phoneNumber', 'password'] :
-  // req.url !== '/auth/register' && req.method === 'PUT' ?
-  // [] :
-  // undefined;
+  let allowedFields = ['email', 'password', 'firstName', 'lastName', 'phoneNumber', 'companyName']
 
   let requiredFields;
 

@@ -1,6 +1,23 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
+// exports.checkToken = asyncHandler(async (req, res, next) => {
+//     const token = req.body.token;
+//     let user = await User.findOne({ email: req.body.email });
+//     const tokenObject = await Token.findOne({
+//       token: token,
+//       user: user._id,
+//       type: tokenTypes.email,
+//       expired: false
+//     });
+//     if (tokenObject) {
+//       await User.findByIdAndUpdate(user._id, { verified: true });
+//       await Token.deleteOne({ "token": token });
+//       return res.status(200).end();
+//     }
+//     else {
+//       return next(new NotFoundError('User', 400));
+//     }
+//   });
 exports.checkToken = (async (req, res, next) => {
     if (req.headers?.check === 'google') { checkMyToken(req, res, next) }
     else if (!req.headers?.check) {

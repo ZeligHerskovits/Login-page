@@ -6,30 +6,47 @@
     <title>Login Page</title>
     <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Rubik:400,700'>
     <link rel="stylesheet" href="/css/login.css">
+    <style>
+        .forgot-password {
+            color: dodgerblue;
+            text-decoration: underline;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+        
+    </style>
 </head>
 
 <body>
-    <div class="login-form">
-        <form id="loginForm">
-            <h1>Login</h1>
-            <div class="content">
-                <div class="input-field">
-                    <input type="email" name="email" placeholder="Email" autocomplete="nope" required>
+    <div class="container">
+        <h1 class="main-heading">Welcome To ABC Messenger Trip Company</h1>
+        <div class="login-form">
+            <form id="loginForm">
+                <h1>Login</h1>
+                <div class="content">
+                    <div class="input-field">
+                        <input type="email" name="email" placeholder="Email" autocomplete="nope" required>
+                    </div>
+                    <div class="input-field">
+                        <input type="password" name="password" placeholder="Password" autocomplete="new-password" required>
+                    </div>
                 </div>
-                <div class="input-field">
-                    <input type="password" name="password" placeholder="Password" autocomplete="new-password" required>
+                <div>
+                    <button type="submit" class="login-btn">Login</button>
                 </div>
+            </form>
+            <!-- <form action="http://localhost:3000/auth/logout" method="post"><button class="logout-btn">Log out</button> -->
+            </form>
+            <div class="action">
+                <a href="forgot-password.html" class="forgot-password">Forgot password?</a>
+                <span class="register-link">Don't have an account? <a href="register.html">Register</a></span>
             </div>
-            <div>
-                <button type="submit" class="login-btn">Login</button>
-            </div>
-        </form>
-        <form action="http://localhost:3000/auth/logout" method="post"><button class="logout-btn">Log out</button>
-        </form>
-        <div class="action">
-            <button class="register-link">Don't have an account? <a href="register.html">Register</a></button>
+            <div id="error-message" style="color: red; margin-top: 10px;"></div>
         </div>
-        <div id="error-message" style="color: red; margin-top: 10px;"></div>
     </div>
     <script>
         document.getElementById('loginForm').addEventListener('submit', async function (event) {
@@ -54,16 +71,16 @@
                 if (data.error != undefined || data.message == undefined) {
                     const errorMessageElement = document.getElementById('error-message');
                     //errorMessageElement.textContent = `${data.error} please try again` || 'Login failed.';
-                     errorMessageElement.textContent = `Your login failed because you entered a ${data.error}` || 'Login failed.';
+                    //errorMessageElement.textContent = `Your login failed because you entered a ${data.error}` || 'Login failed.';
+                    errorMessageElement.textContent = `Login failed - ${data.error}` || 'Login failed.';
                 } else {
 
                     localStorage.setItem('token', data.token);
-
-                    // If login is successful, redirect to trip.html
                     window.location.href = 'trip.html';
                 }
             } catch (error) {
-                alert('Error during login:', error);
+                //alert('Error during login:', error);
+                errorMessageElement.textContent = `Login failed - ${error}` || 'Login failed.';
                 console.error('Error during login:', error);
             }
 

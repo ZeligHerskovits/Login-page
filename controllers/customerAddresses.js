@@ -6,7 +6,15 @@ const Zone = require('../models/Zone');
 
 // POST /customersAddress
 exports.createCustomerAddress = async (req, res, next) => {
-    let fields = checkFields(req.body, ['customer', 'location'], ['customer', 'location']);
+
+    let fields;
+    if (req.headers?.check !== 'google') {
+        fields = checkFields(req.body, ['customer', 'location'], ['customer', 'location']);
+    } else {
+    fields = checkFields(req.body, ['customerName', 'customerEmail', 'formattedAddress', 'street', 'city', 'state', 'zipCode'],
+        ['customerName', 'customerEmail', 'street', 'city', 'state', 'zipCode']);
+    }
+
     if (fields instanceof Error) return next(fields);
     if (req.body.location) {
         fields = checkFields(req.body.location, [
@@ -28,7 +36,7 @@ exports.createCustomerAddress = async (req, res, next) => {
                 { email: { $regex: new RegExp(customerEmail, 'i') } }
             ]
         });
-        
+
         if (!customer) {
             return next(new NotFoundError('Customer not found', 400));
         }
@@ -39,15 +47,33 @@ exports.createCustomerAddress = async (req, res, next) => {
         customerId = req.user.roleObject._id;
     }
 
-    if (!req.body.location.formattedAddress) {
-        const address = req.body.location;
-        req.body.location.formattedAddress = (address.street)
-            + (address.streetLine2 ? ' ' + address.streetLine2 : '')
-            + (address.city ? ' ' + address.city : '')
-            + (address.state ? ', ' + address.state : '')
-            + (address.zipCode ? ' ' + address.zipCode : '');
+    if (req.headers?.check !== 'google') {
+        if (!req.body.location.formattedAddress) {
+            const address = req.body.location;
+            req.body.location.formattedAddress = (address.street)
+                + (address.streetLine2 ? ' ' + address.streetLine2 : '')
+                + (address.city ? ' ' + address.city : '')
+                + (address.state ? ', ' + address.state : '')
+                + (address.zipCode ? ' ' + address.zipCode : '');
+        }
     }
+    else if (req.headers?.check === 'google') {
+        if (!req.body.location) {
+            req.body.location = {};
+        }
 
+        if (!req.body.location.formattedAddress) {
+            req.body.location.formattedAddress = (req.body.street)
+                + (req.body.city ? ' ' + req.body.city : '')
+                + (req.body.state ? ', ' + req.body.state : '')
+                + (req.body.zipCode ? ' ' + req.body.zipCode : '');
+
+            req.body.location.street = req.body.street
+            req.body.location.city = req.body.city
+            req.body.location.state = req.body.state
+            req.body.location.zipCode = req.body.zipCode
+        }
+    }
     const zoneId = await checkZone(req.body)
 
     const customerAddress = await CustomerAddress.create({

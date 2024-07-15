@@ -6,107 +6,299 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Messenger Trip Creation</title>
     <link rel="stylesheet" href="/css/trip.css">
-    <style>
-        #map {
-            height: 400px;
-            width: 100%;
-        }
-    </style>
 </head>
 
 <body>
-    <div class="container">
-        <form id="tripForm" action="http://localhost:3000/trip" method="post">
-            <h2>Schedule a Messenger Trip With Our Company</h2>
-            <div class="input-group">
-                <label for="pickupAddress">Pickup Address:<span class="required">*</span></label>
-                <input type="text" id="pickupAddress" name="pickupAddress" placeholder="Enter pickup address" required>
-                <div class="error-message" id="pickupAddressError"></div>
-            </div>
-
-            <div class="input-group">
-                <label for="dropoffAddress">Drop-off Address:<span class="required">*</span></label>
-                <input type="text" id="dropoffAddress" name="dropoffAddress" placeholder="Enter drop-off address"
-                    required>
-                <div class="error-message" id="dropoffAddressError"></div>
-            </div>
-
-            <div class="input-group">
-                <label for="pickupName">Pickup Name:<span class="required">*</span></label>
-                <input type="text" id="pickupName" name="pickupName" placeholder="Enter pickup name" required>
-                <div class="error-message" id="pickupNameError"></div>
-            </div>
-
-            <div class="input-group">
-                <label for="dropoffName">Drop-off Name:<span class="required">*</span></label>
-                <input type="text" id="dropoffName" name="dropoffName" placeholder="Enter drop-off name" required>
-                <div class="error-message" id="dropoffNameError"></div>
-            </div>
-
-            <div class="input-group">
-                <label for="pickupPhone">Pickup Phone Number:<span class="required">*</span></label>
-                <input type="text" id="pickupPhone" name="pickupPhone" placeholder="Enter pickup phone number" required pattern="[0-9]+">
-                <div class="error-message" id="pickupPhoneError"></div>
-            </div>
-            
-            <div class="input-group">
-                <label for="dropoffPhone">Drop-off Phone Number:<span class="required">*</span></label>
-                <input type="text" id="dropoffPhone" name="dropoffPhone" placeholder="Enter drop-off phone number" required pattern="[0-9]+">
-                <div class="error-message" id="dropoffPhoneError"></div>
-            </div>
-
-            <div class="input-group">
-                <label for="pickupNote">Pickup Note:</label>
-                <textarea id="pickupNote" name="pickupNote" placeholder="Enter pickup note"></textarea>
-                <div class="error-message" id="pickupNoteError"></div>
-            </div>
-
-            <div class="input-group">
-                <label for="dropoffNote">Drop-off Note:</label>
-                <textarea id="dropoffNote" name="dropoffNote" placeholder="Enter drop-off note"></textarea>
-                <div class="error-message" id="dropoffNoteError"></div>
-            </div>
-
-            <div class="input-group">
-                <label for="numberOfPackages">Number of Packages:<span class="required">*</span></label>
-                <input type="number" id="numberOfPackages" name="numberOfPackages"
-                    placeholder="Enter number of packages" required>
-                <div class="error-message" id="numberOfPackagesError"></div>
-            </div>
-
-            <div class="input-group">
-                <label for="packageType">Package Type:<span class="required">*</span></label>
-                <select id="packageType" name="packageType" required>
-                    <option value="Bag">Bag</option>
-                    <option value="Box">Box</option>
-                    <option value="Invitation">Invitation</option>
-                    <option value="Luggage">Luggage</option>
-                    <option value="Envelope">Envelope</option>
-                    <option value="Flower">Flower</option>
-                    <option value="GiftArrangement">Gift Arrangement</option>
-                    <option value="GarmentBag">Garment Bag</option>
-                    <option value="OpenWrap">Open Wrap</option>
-                    <option value="Delicate">Delicate</option>
-                    <option value="Other">Other</option>
-                </select>
-                <div class="error-message" id="packageTypeError"></div>
-            </div>
-
-            <button type="button" class="create-trip-btn" onclick="createMyTrip()">Schedule Trip</button>
-            <!-- <button type="button" onclick="createTrip()">Create Trip</button> -->
-        </form>
-        <!-- </form> -->
-        <div class="trip-list">
-            <h3>Your Trips</h3>
-            <ul id="tripList">
-            </ul>
-        </div>
-    </div>
-
-    <!-- Google Maps -->
-    <div id="map"></div>
-
     <script>
+          const token = localStorage.getItem('token');
+          if (!token) {
+              //alert('please login and try again');
+              window.location.href = 'login.html';
+          }
+      </script>
+    <form>
+        <a href="#" class="logout-link" onclick="logout()">Log Out</a>
+    </form>
+
+    <a href="http://127.0.0.1:5500/html/customerAddress.html" class="top-link">Create Address</a>
+    <div class="flex-container">
+        <div class="container">
+            <form id="tripForm" action="http://localhost:3000/trip" method="post">
+                <h5>"We serve the entire Tri-State area"</h5>
+                <h2>Schedule a Messenger Trip With Our Company</h2>
+                <div class="input-group">
+                    <label for="pickupAddress">Pickup Address<span class="required">*</span></label>
+                    <input type="text" id="pickupAddress" name="pickupAddress" placeholder="Enter pickup address"
+                        required>
+                    <div class="error-message" id="pickupAddressError"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="dropoffAddress">Drop-off Address<span class="required">*</span></label>
+                    <input type="text" id="dropoffAddress" name="dropoffAddress" placeholder="Enter drop-off address"
+                        required>
+                    <div class="error-message" id="dropoffAddressError"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="pickupName">Pickup Name<span class="required">*</span></label>
+                    <input type="text" id="pickupName" name="pickupName" placeholder="Enter pickup name" required pattern="[A-Za-z\s]+">
+                    <div class="error-message" id="pickupNameError"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="dropoffName">Drop-off Name<span class="required">*</span></label>
+                    <input type="text" id="dropoffName" name="dropoffName" placeholder="Enter drop-off name" required pattern="[A-Za-z\s]+">
+                    <div class="error-message" id="dropoffNameError"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="pickupPhone">Pickup Phone Number<span class="required">*</span></label>
+                    <input type="text" id="pickupPhone" name="pickupPhone" placeholder="Enter pickup phone number"
+                        required pattern="[0-9]+">
+                    <div class="error-message" id="pickupPhoneError"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="dropoffPhone">Drop-off Phone Number<span class="required">*</span></label>
+                    <input type="text" id="dropoffPhone" name="dropoffPhone" placeholder="Enter drop-off phone number"
+                        required pattern="[0-9]+">
+                    <div class="error-message" id="dropoffPhoneError"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="pickupNote">Pickup Note</label>
+                    <textarea id="pickupNote" name="pickupNote" placeholder="Enter pickup note"></textarea>
+                    <div class="error-message" id="pickupNoteError"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="dropoffNote">Drop-off Note</label>
+                    <textarea id="dropoffNote" name="dropoffNote" placeholder="Enter drop-off note"></textarea>
+                    <div class="error-message" id="dropoffNoteError"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="numberOfPackages">Number of Packages<span class="required">*</span></label>
+                    <input type="number" id="numberOfPackages" name="numberOfPackages"
+                        placeholder="Enter number of packages" required>
+                    <div class="error-message" id="numberOfPackagesError"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="packageType">Package Type<span class="required">*</span></label>
+                    <select id="packageType" name="packageType" required>
+                        <option value="Bag">Bag</option>
+                        <option value="Box">Box</option>
+                        <option value="Invitation">Invitation</option>
+                        <option value="Luggage">Luggage</option>
+                        <option value="Envelope">Envelope</option>
+                        <option value="Flower">Flower</option>
+                        <option value="GiftArrangement">Gift Arrangement</option>
+                        <option value="GarmentBag">Garment Bag</option>
+                        <option value="OpenWrap">Open Wrap</option>
+                        <option value="Delicate">Delicate</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <div class="error-message" id="packageTypeError"></div>
+                </div>
+
+                <button type="button" class="create-trip-btn" onclick="createMyTrip()">Schedule Trip</button>
+                <!-- <button type="button" onclick="createTrip()">Create Trip</button> -->
+            </form>
+            <div id="confirmation-message" style="color: green; margin-top: 10px; font-size: 20px; font-weight: bold; text-align: center;"></div>
+        </div>
+        <div class="trip-list">
+            <h3>All Trips</h3>
+            <table id="tripList">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Driver</th>
+                        <th>Pickup Address</th>
+                        <th>Pickup Name</th>
+                        <th>Pickup Phone</th>
+                        <th>Dropoff Address</th>
+                        <th>Dropoff Name</th>
+                        <th>Dropoff Phone</th>
+                        <th>Number of Packages</th>
+                        <th>Payment Status</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Trip Schedule Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button id="showMoreButton">Show More</button>
+        </div>
+        <!-- Google Maps -->
+        <p id="duration" style="font-weight: bold;"></p>
+        <div id="map"></div>
+    </div>
+    <script>
+        function logout() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('No token provided, please login and try again');
+                return;
+            }
+
+            fetch('http://localhost:3000/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'check': 'google'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        localStorage.removeItem('token');
+                        window.location.href = 'login.html';
+                    } else {
+                        console.error('Logout failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        let tripsData = [];
+        let currentIndex = 0;
+        const tripsPerPage = 9;
+
+        fetchTrips();
+
+        async function fetchTrips() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                //alert('No token provided, please login and try again');
+                window.location.href = 'login.html';
+            }
+
+            const fetchOptions = {
+                method: 'get',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'check': 'google'
+                }
+            };
+
+            try {
+                const tripResponse = await fetch('http://localhost:3000/trips', fetchOptions);
+                if (!tripResponse.ok) {
+                    const errorData = await tripResponse.json();
+                    throw new Error(`Error: ${errorData.error}`);
+                }
+                const trips = await tripResponse.json();
+                // tripsData = trips;
+                // for (const trip of trips) {
+                customersResponse = await fetch('http://localhost:3000/customers', fetchOptions);
+                if (!customersResponse.ok) {
+                    const errorData = await customersResponse.json();
+                    throw new Error(`Error: ${errorData.error}`);
+                }
+
+                const customers = await customersResponse.json();
+
+                const driversResponse = await fetch('http://localhost:3000/drivers', fetchOptions);
+                if (!driversResponse.ok) {
+                    const errorData = await driversResponse.json();
+                    throw new Error(`Error fetching drivers: ${errorData.error}`);
+                }
+                const drivers = await driversResponse.json();
+
+                const customerAddressesResponse = await fetch('http://localhost:3000/customerAddresses', fetchOptions);
+                if (!customerAddressesResponse.ok) {
+                    const errorData = await customerAddressesResponse.json();
+                    throw new Error(`Error fetching customer addresses: ${errorData.error}`);
+                }
+                const customerAddresses = await customerAddressesResponse.json();
+
+                // Create a map of customer IDs to names
+                const customerMap = new Map();
+                customers.forEach(customer => {
+                    customerMap.set(customer._id, `${customer.firstName} ${customer.lastName}`);
+                });
+
+                // Create a map of driver IDs to names
+                const driverMap = new Map();
+                drivers.forEach(driver => {
+                    driverMap.set(driver._id, `${driver.firstName} ${driver.lastName}`);
+                });
+
+                // Create a map of customer IDs to addresses
+                const customerAddressMap = new Map();
+                customerAddresses.forEach(address => {
+                    customerAddressMap.set(address._id, `${address.location.city}, ${address.location.state}`);
+                });
+
+                // Append customer names, driver names, and customer addresses to trips
+                trips.forEach(trip => {
+                    trip.customerName = customerMap.get(trip.customer) || 'Unknown';
+                    trip.driverName = driverMap.get(trip.driver) || 'N/A';
+                    trip.dropoffAddress = customerAddressMap.get(trip.dropoffAddress) || 'Unknown';
+                    trip.pickupAddress = customerAddressMap.get(trip.pickupAddress) || 'Unknown';
+                });
+
+                tripsData = trips;
+                // const customerId = customers.find(customer => customer._id === trip.customer);
+                // const name = customerId.firstName + ' ' + customerId.lastName
+                //}
+                displayTrips();
+                //alert('Trips successfully fetched!');
+            } catch (error) {
+                if (error.message.includes("jwt expired")) {
+                    //alert(`${error.message},  Please login and try again`);
+                    window.location.href = 'login.html';
+                } else {
+                    console.error('Error during form submission:', error.message);
+                }
+            }
+        }
+
+        function displayTrips() {
+            const tripList = document.getElementById('tripList').querySelector('tbody');
+            tripList.innerHTML = ''; // Clear existing list
+
+            const endIndex = Math.min(currentIndex + tripsPerPage, tripsData.length);
+
+            for (let i = currentIndex; i < endIndex; i++) {
+                const trip = tripsData[i];
+                const tripRow = document.createElement('tr');
+
+                tripRow.innerHTML = `
+            <td>${trip.customerName}</td>
+            <td>${trip.driverName || 'N/A'}</td>
+            <td>${trip.pickupAddress}</td>
+            <td>${trip.pickupName}</td>
+            <td>${trip.pickupPhone}</td>
+            <td>${trip.dropoffAddress}</td>
+            <td>${trip.dropoffName}</td>
+            <td>${trip.dropoffPhone}</td>
+            <td>${trip.numberOfPackages}</td>
+            <td>${trip.paymentStatus}</td>
+            <td>${trip.priority}</td>
+            <td>${trip.status}</td>
+            <td>${new Date(trip.tripScheduleTime).toLocaleString()}</td>
+        `;
+
+                tripList.appendChild(tripRow);
+            }
+
+            currentIndex = endIndex;
+
+            const showMoreButton = document.getElementById('showMoreButton');
+            if (currentIndex >= tripsData.length) {
+                showMoreButton.style.display = 'none'; // Hide the button if no more trips
+            } else {
+                showMoreButton.style.display = 'block'; // Show the button if there are more trips
+            }
+        }
+
+        document.getElementById('showMoreButton').addEventListener('click', displayTrips);
 
         async function createMyTrip() {
 
@@ -115,7 +307,10 @@
 
             // Assuming you have retrieved the token from localStorage
             const token = localStorage.getItem('token');
-            if(!token){alert('No token provided, pls login and try again');}
+            if (!token) { 
+                //alert('No token provided, pls login and try again');
+                window.location.href = 'login.html';
+             }
             if (!form.checkValidity()) {
                 displayFieldErrors();
             } else {
@@ -137,16 +332,19 @@
                     }
                     const data = await response.json();
                     console.log(data);
-                    alert('Trip successfully created!');
-                    // You may redirect or update UI based on the response
+                    //alert('Trip successfully created!');
+                    document.getElementById('confirmation-message').textContent = 'Trip successfully created!';
                 } catch (error) {
-                    error.message.includes("jwt expired") ? 
-                    alert(`${error.message},  Please login and try again. Visit http://127.0.0.1:5500/html/login.html to login.`) :
-                    error.message.includes("There is no such a address like this saved") ?  
-                    alert(`Error during form submission pls fix and try again,  ${error.message}. Visit http://127.0.0.1:5500/html/customerAddress.html to create address.`): 
-                    alert(`Error during form submission pls fix and try again,  ${error.message}`);
-
-                    console.error('Error during form submission:', error.message);
+                    if (error.message.includes("jwt expired")) {
+                        //alert(`${error.message},  Please login and try again`);
+                        window.location.href = 'login.html';
+                    }
+                    else if (error.message.includes("Address")) {
+                        alert(`${error.message},  please create the address and try again`);
+                        window.location.href = 'customerAddress.html';
+                    } else {
+                        console.error('Error during form submission:', error.message);
+                    }
                 }
             }
         }
@@ -158,56 +356,28 @@
         }
 
         function displayFieldErrors() {
-    // Display error messages for each invalid field
-    const requiredInputs = document.querySelectorAll('input[required], input[pattern]');
-    requiredInputs.forEach(input => {
-        const errorDiv = document.getElementById(`${input.id}Error`);
-        if (!input.validity.valid) {
-            if (input.validity.patternMismatch) {
-                errorDiv.textContent = `You can only enter numbers for ${input.labels[0].textContent.toLowerCase()} field`;
-            } else {
-                errorDiv.textContent = `${input.labels[0].textContent} is required`;
-            }
+            // Display error messages for each invalid field
+            const requiredInputs = document.querySelectorAll('input[required], input[pattern]');
+            requiredInputs.forEach(input => {
+                const errorDiv = document.getElementById(`${input.id}Error`);
+                if (!input.validity.valid) {
+                    if (input.id === 'pickupPhone' || input.id === 'dropoffPhone') {
+                        errorDiv.textContent = `You can only enter numbers for ${input.labels[0].textContent.toLowerCase()} field`;
+                    } else if (input.id === 'pickupName' || input.id === 'dropoffName') {
+                        errorDiv.textContent = `You can only enter letters for ${input.labels[0].textContent.toLowerCase()} field`;
+                    }
+                    else {
+                        errorDiv.textContent = `${input.labels[0].textContent} is required`;
+                    }
+                }
+            });
         }
-    });
-}
 
-
-        // async function createTrip() {
-        //     const token = "YOUR_TOKEN_HERE"; // Replace with your actual token
-
-        //     const form = document.getElementById("tripForm");
-        //     //form.submit();
-        //     if (!form.checkValidity()) {
-        //         console.error("Form is not valid");
-        //         return;
-        //     }
-        //     const formData = new FormData(form);
-
-        //     try {
-        //         const response = await fetch("http://localhost:3000/trip", {
-        //             method: "POST",
-        //             headers: {
-        //                 "Cookie": `token=${token}`, // Include your token in the Cookie header
-        //             },
-        //             body: formData,
-        //         });
-
-        //         if (response.ok) {
-        //             const data = await response.json();
-        //             console.log("Trip created:", data);
-        //         } else {
-        //             console.error("Failed to create trip");
-        //         }
-        //     } catch (error) {
-        //         console.error("Error:", error);
-        //     }
-        // }
     </script>
 
     <!-- Include Google Maps API -->
     <script defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfWwwyoL6SvDMefnll4qu6K69YU8s9PIA&libraries=places&callback=initMap">
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB0fnIA39Y5fHnKPkLhuFj1Tw0RU1tGn6s&libraries=places&callback=initMap">
         </script>
     <script>
         // Google Maps initialization
@@ -265,6 +435,9 @@
                     function (response, status) {
                         if (status === 'OK') {
                             directionsRenderer.setDirections(response);
+                            const route = response.routes[0];
+                            const duration = route.legs[0].duration.text;
+                            document.getElementById('duration').textContent = 'Estimated Driving Time: ' + duration;
                         } else {
                             window.alert('Directions request failed due to ' + status);
                         }

@@ -37,7 +37,7 @@ exports.createTrip = async (req, res, next) => {
       ]
     });
 
-    return foundAddress ? foundAddress._doc._id.toString() : next(new ErrorResponse('There is no such a address like this saved, pls create this address and try again', 500));
+    return foundAddress ? foundAddress._doc._id.toString() : ''//next(new ErrorResponse('There is no such a address like this saved, pls create this address and try again', 500));
   }
 
   const { pickupAddress, dropoffAddress } = req.body;
@@ -51,8 +51,11 @@ exports.createTrip = async (req, res, next) => {
     req.body.driver ? Driver.findById(req.body.driver) : 1
   ]);
 
-  if (!promises[0] || !promises[1]) {
-    return next(new NotFoundError('Address', 400));
+  if (!promises[0]) {
+    return next(new NotFoundError('Pickup Address', 400));
+  }
+  if (!promises[1]) {
+    return next(new NotFoundError('Dropoff Address', 400));
   }
   if (!promises[2]) {
     return next(new NotFoundError('Customer', 400));
@@ -64,7 +67,7 @@ exports.createTrip = async (req, res, next) => {
   const today = new Date();
   req.body.pickupAddress = pickupId
   req.body.dropoffAddress = dropoffId
-  
+
   let trip = await Trip.create({
     ...req.body,
     createdByUserRole: req.user.role,
@@ -189,7 +192,7 @@ async function dispatch(body, user, trip, next, priority = 'normal', updateObj) 
 exports.getTrips = async (req, res, next) => {
 
   const results = await Trip.find();
-  return res.status(200).json(results);
+  return res.status(200).json(results.map(result => result._doc));
 };
 
 // PUT /trip/trip_id

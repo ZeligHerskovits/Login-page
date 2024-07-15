@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color:  #a2dac4;
+    background-color: #a2dac4;
 }
 
 .container {
@@ -36,8 +36,8 @@ input {
 
 input[type=text]:focus,
 input[type=email]:focus {
-  outline: none;
-  border: 2px solid #04AA6D;
+    outline: none;
+    border: 2px solid #04AA6D;
 }
 
 button {
@@ -51,4 +51,62 @@ button {
 
 button:hover {
     background-color: #c9302c;
+}
+
+.error-message {
+    color: red;
+    display: none;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+}
+
+form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+form input {
+    display: block;
+    margin-bottom: 0;
+    padding: 8px;
+    font-size: 14px;
+}
+
+.create-address-btn {
+    margin-top: 15px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.top-link {
+    position: absolute;
+    top: 50px;
+    left: 450px;
+    background-color: yellow;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+    border-radius: 5px;
+    font-size: 17px;
+}
+
+.top-link:hover {
+    background-color: orange;
+    color: white;
+}
+
+.logout-link {
+    position: absolute;
+    top: 25px;
+    right: 100px;
+    text-decoration: none;
+    color: black;
+    font-size: 17px;
+}
+
+.logout-link:hover {
+    text-decoration: underline;
 }

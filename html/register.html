@@ -8,8 +8,7 @@
 </head>
 
 <body>
-
-    <form action="http://localhost:3000/auth/register" method="post">
+    <form action="http://localhost:3000/auth/register" method="post" id="registrationForm">
         <div class="container">
             <h1>Register</h1>
             <p>Please fill in this form to create an account.</p>
@@ -22,25 +21,75 @@
             <input type="text" placeholder="Enter Last Name" name="lastName" id="lstName" required>
 
             <label for="phoneNumber"><b>Phone Number</b></label>
-            <input type="tel" placeholder="Enter Phone Number" name="phoneNumber" id="phoneNumber" pattern="[0-9]*" title="Please enter a valid phone number (numbers only)" required>
+            <input type="tel" placeholder="Enter Phone Number" name="phoneNumber" id="phoneNumber"
+                pattern="(?:\d{10}|\d{11})" title="Please enter a valid phone number (from 10 or 11 digits)" required>
 
             <label for="comName"><b>Company Name</b></label>
             <input type="text" placeholder="Enter Company Name" name="companyName" id="comName" required>
-           
+
             <label for="email"><b>Email</b></label>
-            <input type="email" name="email" placeholder="Enter Email" id="email" required>
+            <input type="text" name="email" placeholder="Enter Email" id="email" required>
+            <div id="emailError" style="color: red;"></div>
 
             <label for="password"><b>Password</b></label>
             <input type="password" placeholder="Enter Password" name="password" id="password" required>
 
-            <button type="submit" class="registerbtn">Register</button>
+            <button type="submit" class="registerbtn" id="registerButton">Register</button>
         </div>
 
         <div class="container signin">
             <p>Already have an account?&nbsp;&nbsp;<a href="login.html">Sign in</a>.</p>
+            <div id="error-message" style="color: red; margin-top: 10px;"></div>
         </div>
     </form>
+    
+    <script>
+        document.getElementById("email").addEventListener("input", function () {
+            var email = document.getElementById("email").value;
+            var emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+            var emailError = document.getElementById("emailError");
+            var registerButton = document.getElementById("registerButton");
 
+            if (!emailRegex.test(email)) {
+                emailError.textContent = "Please enter a valid email with 'gmail.com' domain";
+                registerButton.disabled = true;
+            } else {
+                emailError.textContent = "";
+                registerButton.disabled = false;
+            }
+        });
+
+
+        document.getElementById("registrationForm").addEventListener("submit", async function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const form = document.getElementById('registrationForm');
+            var formData = new FormData(form);
+
+            const fetchOptions = {
+                method: form.method,
+                body: new URLSearchParams(formData),
+            };
+
+            try {
+                const response = await fetch(form.action, fetchOptions);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Error: ${errorData.error}`);
+                }
+                //const data = await response.json();
+                //console.log(data);
+                //alert('Registered successfully!');
+                document.getElementById('registrationForm').textContent = 'You have successfully get registerd.';
+                window.location.href = 'login.html';
+            } catch (error) {
+                //alert(`${error.message}`)
+                document.getElementById('error-message').textContent = `${error.message}`;
+                console.error('Error during form submission:', error.message);
+            }
+        });
+
+    </script>
 </body>
 
 </html>

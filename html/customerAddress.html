@@ -1,34 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create Customer Address</title>
-    <link rel="stylesheet" href="/css/customerAddress.css">
-</head>
+    <link rel="stylesheet" href="/css/customerAddress.css" />
+  </head>
 
-<body>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <script>
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "login.html";
+      } else {
+        const decodedToken = jwt_decode(token);
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (decodedToken.exp < currentTime) {
+          localStorage.removeItem("token");
+          window.location.href = "login.html";
+        }
+      }
+    </script>
+
+    <form>
+      <a href="#" class="logout-link" onclick="logout()">Log Out</a>
+    </form>
+    <a href="http://127.0.0.1:5500/html/trip.html" class="top-link"
+      >Schedule A Trip</a
+    >
     <div class="container">
-        <h2>Create Customer Address</h2>
-        <form id="createAddressForm">
-            <label for="customerName">Customer Name: (For dispatcher only)</label>
-            <input type="text" id="customerName" name="customerName" required>
-            <label for="customerEmail">Customer Email:  (For dispatcher only)</label>
-            <input type="email" id="customerEmail" name="customerEmail" required>
-            <label for="formattedAddress">Formatted Address: (optianol)</label>
-            <input type="text" id="formattedAddress" name="formattedAddress" required>
-            <label for="street">Street:</label>
-            <input type="text" id="street" name="street" required>
-            <label for="city">City:</label>
-            <input type="text" id="city" name="city" required>
-            <label for="state">State:</label>
-            <input type="text" id="state" name="state" required>
-            <label for="zipCode">Zip Code:</label>
-            <input type="text" id="zipCode" name="zipCode" required>
-            <button type="submit">Create Address</button>
-        </form>
-    </div>
-</body>
+      <h2>Create Customer Address</h2>
+      <form
+        id="createAddressForm"
+        action="http://localhost:3000/customerAddress"
+        method="POST"
+        novalidate
+      >
+        <label for="customerName">Customer Name: (For dispatcher only)</label>
+        <input type="text" id="customerName" name="customerName" required />
+        <div id="customerNameError" class="error-message"></div>
 
+        <label for="customerEmail">Customer Email: (For dispatcher only)</label>
+        <input type="email" id="customerEmail" name="customerEmail" required />
+        <div id="customerEmailError" class="error-message"></div>
+
+        <label for="formattedAddress">Formatted Address: (optional)</label>
+        <input type="text" id="formattedAddress" name="formattedAddress" />
+
+        <label for="street">Street: (incloding the number from the street)</label>
+        <input type="text" id="street" name="street" required />
+        <div id="streetError" class="error-message"></div>
+
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required />
+        <div id="cityError" class="error-message"></div>
+
+        <label for="state">State:</label>
+        <input type="text" id="state" name="state" required />
+        <div id="stateError" class="error-message"></div>
+
+        <label for="zipCode">Zip Code:</label>
+        <input type="text" id="zipCode" name="zipCode" required pattern="\d*" />
+        <div id="zipCodeError" class="error-message"></div>
+
+        <button
+          type="button"
+          class="create-address-btn"
+          onclick="createCustomerAddress()"
+        >
+          Create Address
+        </button>
+      </form>
+      <div id="error-message" style="color: red; margin-top: 10px;"></div>
+      <div id="confirmation-message" style="color: green; margin-top: 10px; font-size: 20px; font-weight: bold; text-align: center;"></div>
+    </div>
+
+    <script>
+      async function createCustomerAddress() {
+        resetErrorMessages();
+        const form = document.getElementById("createAddressForm");
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+          //alert("No token provided, pls login and try again");
+          window.location.href = "login.html";
+        }
+        //window.location.href = "login.html";
+        if (!form.checkValidity()) {
+          displayFieldErrors();
+        } else {
+          const formData = new FormData(form);
+          const fetchOptions = {
+            method: form.method,
+            headers: {
+              Authorization: `Bearer ${token}`,
+              check: "google",
+            },
+            body: new URLSearchParams(formData),
+          };
+
+          try {
+            const response = await fetch(form.action, fetchOptions);
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(`Error: ${errorData.error}`);
+            }
+            const data = await response.json();
+            console.log(data);
+            //alert("Address successfully created!");
+            document.getElementById('confirmation-message').textContent = 'Address successfully created!';
+          } catch (error) {
+            if (error.message.includes("jwt expired")) {
+              alert(`${error.message},  Please login and try again`);
+              //document.getElementById('error-message').textContent = `${error.message}`;
+              window.location.href = "login.html";
+            } else {
+              document.getElementById('error-message').textContent = `${error}`;
+              console.error("Error during form submission:", error.message);
+            }
+          }
+        }
+      }
+      // createCustomerAddress()
+      function resetErrorMessages() {
+        const errorMessages = document.querySelectorAll(".error-message");
+        errorMessages.forEach((message) => (message.textContent = ""));
+      }
+
+      function displayFieldErrors() {
+        const requiredInputs = document.querySelectorAll(
+          "input[required], input[pattern]"
+        );
+        requiredInputs.forEach((input) => {
+          const errorDiv = document.getElementById(`${input.id}Error`);
+          if (!input.validity.valid) {
+            if (input.validity.patternMismatch) {
+              errorDiv.textContent = `You can only enter numbers for ${input.labels[0].textContent.toLowerCase()} field`;
+            } else {
+              errorDiv.textContent = `${input.labels[0].textContent} is required`;
+            }
+            errorDiv.style.display = "block"; // Ensure error message is visible
+          } else {
+            errorDiv.textContent = "";
+            errorDiv.style.display = "none"; // Hide error message if input is valid
+          }
+        });
+      }
+
+      function logout() {
+        // const token = localStorage.getItem('token');
+        // if (!token) {
+        //     alert('No token provided, please login and try again');
+        //     return;
+        // }
+
+        fetch("http://localhost:3000/auth/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            check: "google",
+          },
+        })
+          .then((response) => {
+            if (response.ok) {
+              localStorage.removeItem("token");
+              window.location.href = "login.html";
+            } else {
+              console.error("Logout failed");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
 </html>

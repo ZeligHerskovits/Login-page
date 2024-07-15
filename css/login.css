@@ -1,7 +1,6 @@
 body {
   font-family: 'Rubik', sans-serif;
   background-color: #aaa9a9;
-  /* Use the same black color as in the register page */
   margin: 0;
   display: flex;
   align-items: center;
@@ -9,16 +8,10 @@ body {
   height: 100vh;
 }
 
-.login-form {
-  background-color: #b5cfc5;
-  /* Change this color to light gray */
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 400px;
-}
-
-form {
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
@@ -26,6 +19,30 @@ h1 {
   font-size: 36px;
   margin-bottom: 20px;
   color: #000;
+}
+
+.main-heading {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: #1E90FF;
+  padding: 10px;
+  font-weight: 700;
+  text-align: center;
+  font-family: 'Rubik', sans-serif;
+  margin-top: 15px;
+}
+
+.login-form {
+  background-color: #b5cfc5;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  margin-top: 20px;
+}
+
+form {
+  text-align: center;
 }
 
 .input-field {
@@ -82,9 +99,8 @@ button {
 }
 
 .register-link {
-  font-size: 14px;
+  font-size: 13px;
   color: #000;
-  /* Dark black color for the link */
 }
 
 a {

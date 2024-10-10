@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Logout</title>
+    <link rel="stylesheet" href="/css/logout.css" />
+</head>
+<body>
+    <!-- Modal -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <!-- <span class="close" onclick="closeModal()">&times;</span> -->
+            <p id="sessionWarning">Your session is about to expire. Do you want to stay logged in?</p>
+            <button onclick="stayLoggedIn()">Yes</button>
+            <button onclick="logout()">No</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+        const jwt = localStorage.getItem('jwt');
+        var socket = io('http://localhost:3000');
+
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket server');
+        });
+
+        socket.on('logout_warning', () => {
+            showModal();
+        });
+       // socket.on('store_url', (url) => {
+          //  console.log(url)
+           // window.location.href = url;
+            //socket.emit('store_url2', url);
+        //});
+        socket.on('redirect', (url) => {
+            var url = localStorage.getItem("storedTheUrl");
+            window.location.href = url;
+        });
+        function showModal() {
+            document.getElementById('logoutModal').style.display = 'block';
+        }
+
+        function stayLoggedIn() {
+            closeModal();
+            var storedUrl = sessionStorage.getItem('storedUrl'); // Retrieve the stored URL
+            socket.emit('store_url2', storedUrl)
+            socket.emit('logout_confirmation', 'yes');
+            //socket.emit('logout_confirmation');
+        }
+        socket.on('logged_out', () => {
+            logout()
+        });
+        function logout() {
+            closeModal();
+            socket.emit('logout_confirmation', 'no');
+                fetch("http://localhost:3000/auth/logout", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${jwt}`,
+                    check: "google",
+                  },
+                })
+                  .then((response) => {
+                    if (response.ok) {
+                      localStorage.removeItem("jwt");
+                      window.location.href = "login.html";
+                    } else {
+                      console.error("Logout failed");
+                    }
+                  })
+                  .catch((error) => {
+                    console.error("Error:", error);
+                  });
+              }
+        
+
+        function closeModal() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+        document.addEventListener('DOMContentLoaded', showModal);
+    </script>
+</body>
+</html>

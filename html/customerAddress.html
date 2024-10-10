@@ -10,14 +10,14 @@
   <body>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
     <script>
-      const token = localStorage.getItem("token");
-      if (!token) {
+      const jwt = localStorage.getItem('jwt');
+      if (!jwt) {
         window.location.href = "login.html";
       } else {
-        const decodedToken = jwt_decode(token);
+        const decodedToken = jwt_decode(jwt);
         const currentTime = Math.floor(Date.now() / 1000);
         if (decodedToken.exp < currentTime) {
-          localStorage.removeItem("token");
+          localStorage.removeItem("jwt");
           window.location.href = "login.html";
         }
       }
@@ -75,15 +75,25 @@
       <div id="error-message" style="color: red; margin-top: 10px;"></div>
       <div id="confirmation-message" style="color: green; margin-top: 10px; font-size: 20px; font-weight: bold; text-align: center;"></div>
     </div>
-
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script>
+      var socket = io('http://localhost:3000');
+      var currentUrl = window.location.href;
+      socket.on('connect', () => {
+          console.log('Connected to WebSocket server');
+      });
+      socket.on('logout_warning', () => {
+          localStorage.setItem('storedTheUrl', "customerAddress.html"); 
+          socket.emit('store_url', currentUrl); 
+          window.location.href = 'logout.html';
+      });
       async function createCustomerAddress() {
         resetErrorMessages();
         const form = document.getElementById("createAddressForm");
 
-        const token = localStorage.getItem("token");
-        if (!token) {
-          //alert("No token provided, pls login and try again");
+        const jwt = localStorage.getItem('jwt');
+        if (!jwt) {
+          //alert("No jwt provided, pls login and try again");
           window.location.href = "login.html";
         }
         //window.location.href = "login.html";
@@ -92,12 +102,18 @@
         } else {
           const formData = new FormData(form);
           const fetchOptions = {
+            credentials: 'include', // This will include cookies in the request
+            //withCredentials: true,
             method: form.method,
-            headers: {
-              Authorization: `Bearer ${token}`,
-              check: "google",
-            },
+          //  headers: {
+             // Authorization: `Bearer ${jwt}`,
+             //check: "google",
+             //'Content-Type': 'application/x-www-form-urlencoded', // Ensure content type is correct for URLSearchParams
+             //Cookie: `token=${jwt}`,
+            // 'Content-Type': 'application/json',
+           // },
             body: new URLSearchParams(formData),
+            
           };
 
           try {
@@ -112,7 +128,7 @@
             document.getElementById('confirmation-message').textContent = 'Address successfully created!';
           } catch (error) {
             if (error.message.includes("jwt expired")) {
-              alert(`${error.message},  Please login and try again`);
+              //alert(`${error.message},  Please login and try again`);
               //document.getElementById('error-message').textContent = `${error.message}`;
               window.location.href = "login.html";
             } else {
@@ -149,22 +165,22 @@
       }
 
       function logout() {
-        // const token = localStorage.getItem('token');
-        // if (!token) {
-        //     alert('No token provided, please login and try again');
+        // const jwt = localStorage.getItem('jwt');
+        // if (!jwt) {
+        //     alert('No jwt provided, please login and try again');
         //     return;
         // }
 
         fetch("http://localhost:3000/auth/logout", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${jwt}`,
             check: "google",
           },
         })
           .then((response) => {
             if (response.ok) {
-              localStorage.removeItem("token");
+              localStorage.removeItem("jwt");
               window.location.href = "login.html";
             } else {
               console.error("Logout failed");
@@ -174,6 +190,12 @@
             console.error("Error:", error);
           });
       }
+      ['mousemove', 'keydown', 'keyup', 'click', 'scroll', 'touchstart', 'mousedown', 'mouseup', 'keypress', 'wheel', 
+      'touchmove', 'touchend', 'resize', 'focus', 'blur', 'input'].forEach(event => {
+          document.addEventListener(event, () => {
+              socket.emit('activity');
+          });
+      });     
     </script>
   </body>
 </html>

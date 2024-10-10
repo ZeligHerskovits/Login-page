@@ -110,3 +110,14 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+.forgot-password {
+  color: dodgerblue;
+  text-decoration: underline;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}

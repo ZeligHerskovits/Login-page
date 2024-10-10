@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Details</title>
+    <link rel="stylesheet" href="/css/send-invoice.css" />
+  </head>
+  <body>
+    <form>
+        <a href="#" class="logout-link" onclick="logout()">Log Out</a>
+      </form>
+    <div class="container">
+      <div class="customer-info">
+        <h2>Customer Details</h2>
+        <p><strong>Name:</strong> John Doe</p>
+        <p><strong>Email:</strong> john.doe@example.com</p>
+        <p><strong>Phone Number:</strong> (123) 456-7890</p>
+        <p><strong>company Name:</strong> Abc</p>
+        <p><strong>Address:</strong> 123 Main St, Anytown, USA</p>
+        <!-- This all above must be dynamic -->
+        <br />
+        <br />
+        <br />
+        <div class="button-container">
+          <button onclick="SendInvoiceToCustomer()" class="send-bill-button">
+            Send Invoice To Customer
+          </button>
+        </div>
+        <div id="error-message" style="color: red; margin-top: 10px;"></div>
+        <div id="confirmation-message" style="color: rgb(3, 94, 3); margin-top: 10px;"></div>
+      </div>
+      <div class="pdf-preview">
+        <h2>Invoice Preview</h2>
+        <iframe src="invoice-pdf.html"></iframe>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        const jwt = localStorage.getItem("jwt");
+        if (!jwt) {
+          window.location.href = "login.html";
+        } else {
+          const decodedToken = jwt_decode(jwt);
+          const currentTime = Math.floor(Date.now() / 1000);
+          if (decodedToken.exp < currentTime) {
+            localStorage.removeItem("jwt");
+            window.location.href = "login.html";
+          }
+        }
+      </script>
+    <script>
+        var socket = io("http://localhost:3000");
+        var currentUrl = window.location.href;
+        socket.on("connect", () => {
+          console.log("Connected to WebSocket server");
+        });
+        socket.on("logout_warning", () => {
+          localStorage.setItem("storedTheUrl", "send-invoice.html");
+          socket.emit("store_url", currentUrl);
+          window.location.href = "logout.html";
+        });
+        function logout() {
+          const jwt = localStorage.getItem("jwt");
+          if (!jwt) {
+            window.location.href = "login.html";
+          }
+  
+          fetch("http://localhost:3000/auth/logout", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${jwt}`,
+              check: "google",
+            },
+          })
+            .then((response) => {
+              if (response.ok) {
+                localStorage.removeItem("jwt");
+                window.location.href = "login.html";
+              } else {
+                console.error("Logout failed");
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        }
+        [
+          "mousemove",
+          "keydown",
+          "keyup",
+          "click",
+          "scroll",
+          "touchstart",
+          "mousedown",
+          "mouseup",
+          "keypress",
+          "wheel",
+          "touchmove",
+          "touchend",
+          "resize",
+          "focus",
+          "blur",
+          "input",
+        ].forEach((event) => {
+          document.addEventListener(event, () => {
+            socket.emit("activity");
+          });
+        });
+      async function SendInvoiceToCustomer() {
+        const jwt = localStorage.getItem("jwt");
+        if (!jwt) {
+          console.log("Your jwt is expired, please login and try again");
+          window.location.href = "login.html";
+        }
+
+        const fetchOptions = {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+            check: "google",
+          },
+        };
+
+        try {
+          const response = await fetch(
+            "http://localhost:3000/sendInvoice",
+            fetchOptions
+          );
+          console.log("Fetch request sent"); // Log after request is sent
+          const data = await response.json();
+
+          if (data.error) {
+              console.error('Error.......');
+              document.getElementById('error-message').textContent = `${data.error}`;
+          } else {
+              console.error('The invoice get sent successfully to customer.');
+              document.getElementById('confirmation-message').textContent = 'The invoice get sent successfully to the customer.';
+          }
+        } catch (error) {
+            if (error.message.includes("jwt expired")) {
+                window.location.href = 'login.html';
+            } else {
+                console.error('Error during form submission:', error.message);
+            }
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,84 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #a2dac4;
+  }
+
+  .container {
+    width: 90%;
+    max-width: 1200px;
+    background-color: #df9e9e;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .customer-info {
+    flex: 3;
+  }
+
+  .customer-info h2 {
+    margin-top: 0;
+  }
+
+  .customer-info p {
+    margin: 5px 0;
+  }
+
+  .button-container {
+    margin-top: 20px;
+  }
+
+  .send-bill-button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .send-bill-button:hover {
+    background-color: #0056b3;
+  }
+
+  .pdf-preview {
+    flex: 2;
+    margin-left: 20px;
+  }
+
+  .pdf-preview iframe {
+    width: 100%;
+    height: 500px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+
+    .pdf-preview {
+      margin-left: 0;
+      margin-top: 20px;
+    }
+  }
+  .logout-link {
+    position: absolute;
+    top: 25px;
+    right: 100px;
+    text-decoration: none;
+    color: black;
+    font-size: 17px;
+  }
+
+  .logout-link:hover {
+    text-decoration: underline;
+  }

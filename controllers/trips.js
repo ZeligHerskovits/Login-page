@@ -1,5 +1,6 @@
 const Trip = require('../models/Trip');
 const mongoose = require('mongoose');
+const url = require('url');
 //const Invoice = require('../models/Invoice');
 const { NotFoundError, ErrorResponse, MissingRequiredError } = require('../utils/errors');
 const CustomerAddress = require('../models/CustomerAddress');
@@ -88,7 +89,6 @@ exports.createTrip = async (req, res, next) => {
   });
 
   trip = await getTripById(trip._id);
-
   return res.status(200).json(trip);//.end();
 
 };
@@ -420,3 +420,33 @@ async function getTripById(id) {
     .populate('driver')
     .populate('refToCreatedBy');
 }
+
+exports.searchTrips = async (req, res, next) => {
+  const filter = url.parse(req.url, true).query.filter;
+  const regexp = new RegExp(filter, 'i');
+  const numberFilter = Number(filter); 
+  
+  let searchTrips = {
+    $or: [
+        { pickupName: regexp },
+        { dropoffName: regexp },
+        { pickupNote: regexp },
+        { dropoffNote: regexp },
+        { status: regexp },
+        { priority: regexp },
+        { packageType: regexp },
+        { paymentStatus: regexp }
+    ]
+};
+if (!isNaN(numberFilter)) {
+     searchTrips.$or.push(
+        { price: numberFilter },
+        { pickupPhone: numberFilter },
+        { dropoffPhone: numberFilter },
+        { numberOfPackages: numberFilter }
+   );
+}
+
+  let trips = await Trip.find(searchTrips);
+  return res.status(200).json(trips);
+};

@@ -49,10 +49,9 @@ UserSchema.virtual('roleObject', {
 UserSchema.methods.getSignedJwtToken = function () {
     const payload = { user_id: this._id };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    return jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXP_TIME,
     });
-    return token
 };
 
 var User = mongoose.model('User', UserSchema);

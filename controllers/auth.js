@@ -137,9 +137,9 @@ exports.login = async (req, res, next) => {
   if (!isMatch) return next(new ErrorResponse("Invalid password", 400));
 
   user = await User.findOne({ _id: user._id, verified: true });
-  if (!user) return next(new ErrorResponse("You must verify your email before loging in", 400));
+  if (!user) return next(new ErrorResponse("Please check your email to verify your email address before loging in", 400));
 
-  const token = user.getSignedJwtToken();
+  
 
   const mailOptions = {
     from: "zeligh4762@gmail.com",
@@ -199,14 +199,45 @@ exports.login = async (req, res, next) => {
 
   sendEmail(transporter, mailOptions);
 
-  return res
-    .cookie("token", token, {
-      expires: new Date(Date.now() + process.env.JWT_EXP_TIME * 86400000),
-      domain: process.env.DOMAIN,
-      httpOnly: true,
-    })
-    .status(200).json({ token: token, message: "Logged in successfully" });
+  // return res.cookie("jwt", jwt, {
+  //   expires: new Date(Date.now() + 2 * process.env.JWT_EXP_TIME), // 2 hours
+  //   domain: process.env.DOMAIN,
+  //   httpOnly: true,
+  //   path: '/',
+  //   secure: true, 
+  //   sameSite: "none"
+  // })
+  // .status(200).json({ jwt: jwt, message: "Logged in successfully" });
   //res.header('x-user-token', token).status(200).send('You have sucsesfully loged in')
+
+
+
+  const options = {
+    expires: new Date(Date.now() + 2 * process.env.JWT_EXP_TIME), // 2 hours
+    domain: process.env.DOMAIN, 
+    httpOnly: false, // Makes the cookie inaccessible to JavaScript on the client side
+    secure: false, // Set to true if using HTTPS
+    sameSite: 'None'
+    //httpOnly: false,
+    //path: '/',
+    //secure: false, 
+    //sameSite: "none"
+  };
+  const jwt = user.getSignedJwtToken();
+  res.cookie('jwt', jwt, options);
+  console.log('Cookie SET', jwt);
+  //res.send();
+  return res.status(200).json({ jwt: jwt, message: "Logged in successfully" }); //.cookie('jwt', jwt, options)
+  //res.header('x-user-token', token).status(200).send('You have sucsesfully loged in')
+
+  // const options = {
+  //     expires: new Date(Date.now() + 2 * process.env.JWT_EXP_TIME), // 2 hours
+  //     domain: process.env.DOMAIN,
+  //     httpOnly: true,
+  //     path: '/', 
+  //   };
+  //  return res.status(200).cookie( "jwt", jwt, options);
+  // //res.header('x-user-token', token).status(200).send('You have sucsesfully loged in')
 };
 
 // POST /auth/logout
@@ -220,7 +251,7 @@ exports.logout = async (req, res, next) => {
     //sameSite: process.env.SAME_SITE || 'Lax', // Default to 'Lax' if not set
   };
   return res
-    .clearCookie("token", options)
+    .clearCookie("jwt", options)
     .status(200)
     .json({ message: "You have successfully Loged out" });
   // res.header('x-user-token', '').status(200).send('You have sucsesfully loged out')
@@ -230,11 +261,11 @@ exports.logout = async (req, res, next) => {
 // GET /auth/me
 exports.getUser = async (req, res, next) => {
   const user = await User.findById(req.user._id);
-  const i = user.roleObject._id;
-  const j = user.roleObject._doc.lastName;
+  const test = user.roleObject._id;
+  const test2 = user.roleObject._doc.lastName;
   //this is not working //const m = user.roleObject._doc.lastName = "plm"
   //so basicly to add data with the populate is not working only to see the data right ?
-  await user.save();
+  //await user.save();
   if (!user) return next(new NotFoundError("User", 400));
   res.status(200).send(user);
 };
@@ -498,6 +529,33 @@ exports.changePassword = async (req, res, next) => {
    sendTokenResponse(user, res);
 };
 
+//POST /auth/sendInvoice
+//sendInvoice
+exports.sendInvoice = async (req, res, next) => {
+  const mailOptions = {
+    from: "zeligh4762@gmail.com",
+    to: "zeligh4762@gmail.com", //email, Its needs to be dynamic
+    subject: "Your Invoice",
+    html: `
+    <html>
+    <body>
+        <h1>Invoice</h1>
+        <p>See attached invoice</p>
+    </body>
+    </html>
+`
+  //we need to send correct data
+  };
+
+  try {
+    const emailResponse = await sendEmail(transporter, mailOptions);
+    console.log('Email sent:', emailResponse);
+    res.status(200).json({ message: 'The invoice was sent successfully to the customer.' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).json({ error: 'Failed to send the invoice. Please try again later.' });
+  }
+};
 
 // web sockets is still in process to complet
 const WebSocket = require("ws");
@@ -508,11 +566,11 @@ const http = require("http");
 const app = express();
 const server = http.createServer(app);
 
-const wss = new WebSocket.Server({ server });
+const ws = new WebSocket.Server({ server });
 
 const userSocketMap = new Map();
 
-wss.on("connection", (ws, req) => {
+ws.on("connection", (ws, req) => {
   console.log("WebSocket client connected.");
   const userId = req.user._id;
 

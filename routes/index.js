@@ -11,7 +11,8 @@ const {
     getUser,
     reqPassword,
     setPassword,
-    verifyEmail
+    verifyEmail,
+    sendInvoice
 } = require('../controllers/auth');
 
 const {
@@ -39,7 +40,8 @@ const {
     updateTrip,
     updateTrips,
     deleteTrip,
-    deleteMultTrips
+    deleteMultTrips,
+    searchTrips
 } = require('../controllers/trips');
 
 const {
@@ -90,6 +92,7 @@ router.put('/trip/:trip_id', checkToken, updateTrip);
 router.put('/trips', checkToken, updateTrips);
 router.delete('/trip/:trip_id', checkToken, deleteTrip);
 router.delete('/trips', checkToken, deleteMultTrips);
+router.get('/search/trips', searchTrips); //checkToken must gos in
 
 //customerAddresses
 router.post('/customerAddress', checkToken, createCustomerAddress);
@@ -103,5 +106,8 @@ router.post('/zone', checkToken, addZone);
 router.get('/zones', checkToken, getZones);
 router.delete('/zone/:zone_id', checkToken, deleteZone);
 router.put('/zone/:zone_id', checkToken, editZone);
+
+//invoice
+router.post('/sendInvoice',  sendInvoice);//checkToken must gos in
 
 module.exports = router;

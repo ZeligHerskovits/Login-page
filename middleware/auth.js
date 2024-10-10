@@ -1,5 +1,10 @@
-const jwt = require('jsonwebtoken');
+const _jwt = require('jsonwebtoken');
 const User = require('../models/User');
+var express = require('express')
+var cookieParser = require('cookie-parser')
+
+var app = express()
+app.use(cookieParser())
 // exports.checkToken = asyncHandler(async (req, res, next) => {
 //     const token = req.body.token;
 //     let user = await User.findOne({ email: req.body.email });
@@ -22,10 +27,10 @@ exports.checkToken = (async (req, res, next) => {
     if (req.headers?.check === 'google') { checkMyToken(req, res, next) }
     else if (!req.headers?.check) {
         try {
-            const token = req.cookies.token;
-            if (!token) throw new Error('You need to enter a token');
+           const jwt = req.cookies?.jwt;
+           if (!jwt) throw new Error('You need to enter a jwt');
 
-            req.user = await decodeFunction(token);
+            req.user = await decodeFunction(jwt);
             next();
         } catch (err) {
             next(err);
@@ -41,10 +46,10 @@ async function checkMyToken (req, res, next) {
             throw new Error('Invalid authorization header');
         }
 
-        const token = authorizationHeader.split(' ')[1];
-        if (!token) throw new Error('You need to enter a token');
+        const jwt = authorizationHeader.split(' ')[1];
+        if (!jwt) throw new Error('You need to enter a jwt');
 
-        req.user = await decodeFunction(token);
+        req.user = await decodeFunction(jwt);
         next();
     } catch (err) {
         next(err);
@@ -52,8 +57,8 @@ async function checkMyToken (req, res, next) {
     return req.user;
 };
 
-async function decodeFunction(token) {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+async function decodeFunction(jwt) {
+    const decoded = _jwt.verify(jwt, process.env.JWT_SECRET);
     // I need to remove .populate('customer')
     const user = await User.findById(decoded.user_id).populate('refToRole').populate('roleObject')//.populate('customer')
     if (!user) {

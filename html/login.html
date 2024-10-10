@@ -6,19 +6,6 @@
     <title>Login Page</title>
     <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Rubik:400,700'>
     <link rel="stylesheet" href="/css/login.css">
-    <style>
-        .forgot-password {
-            color: dodgerblue;
-            text-decoration: underline;
-            font-size: 14px;
-            margin-right: 10px;
-        }
-        
-        .forgot-password:hover {
-            text-decoration: underline;
-        }
-        
-    </style>
 </head>
 
 <body>
@@ -75,7 +62,7 @@
                     errorMessageElement.textContent = `Login failed - ${data.error}` || 'Login failed.';
                 } else {
 
-                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('jwt', data.jwt);
                     window.location.href = 'trip.html';
                 }
             } catch (error) {

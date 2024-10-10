@@ -20,7 +20,7 @@ exports.errorHandler = (err, req, res, next) => {
         err.message = JSON.parse(err.message);
     }
     if (err.message === "invalid signature") {
-        err.message = err.message.replace("signature", "token");
+        err.message = err.message.replace("signature", "jwt");
     }
     // if (err.message.includes('\"')) {
     //     err = err.message.replace('\"', `${err.message}`);

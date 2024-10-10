@@ -10,17 +10,19 @@
 
 <body>
     <script>
-          const token = localStorage.getItem('token');
-          if (!token) {
-              //alert('please login and try again');
+          const jwt = localStorage.getItem('jwt');
+          if (!jwt) {
+              console.log('Your jwt is expired, please login and try again');
               window.location.href = 'login.html';
           }
       </script>
     <form>
         <a href="#" class="logout-link" onclick="logout()">Log Out</a>
     </form>
-
+  <div class="top-links-container">
     <a href="http://127.0.0.1:5500/html/customerAddress.html" class="top-link">Create Address</a>
+    <a href="customers.html" class="top-link">All Customers</a>
+  </div>
     <div class="flex-container">
         <div class="container">
             <form id="tripForm" action="http://localhost:3000/trip" method="post">
@@ -109,7 +111,12 @@
             <div id="confirmation-message" style="color: green; margin-top: 10px; font-size: 20px; font-weight: bold; text-align: center;"></div>
         </div>
         <div class="trip-list">
-            <h3>All Trips</h3>
+            <div class="trip-list-header">
+                <h3>All Trips</h3>
+                <div class="search-container">
+                    <input type="text" id="searchTrips" placeholder="Search trips...">
+                </div>
+            </div>
             <table id="tripList">
                 <thead>
                     <tr>
@@ -137,24 +144,82 @@
         <p id="duration" style="font-weight: bold;"></p>
         <div id="map"></div>
     </div>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchTrips');
+        
+            searchInput.addEventListener('input', async () => {
+                const query = searchInput.value.trim();
+                const url = `http://localhost:3000/search/trips?filter=${encodeURIComponent(query)}`;
+        
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const data = await response.json();
+                    updateTripTable(data);
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                }
+            });
+        });
+        function updateTripTable(trips) {
+            const tripList = document.getElementById('tripList').querySelector('tbody');
+            tripList.innerHTML = ''; // Clear existing list
+        
+            trips.forEach(trip => {
+                const tripRow = document.createElement('tr');
+        
+                tripRow.innerHTML = `
+                    <td>${trip.customerName}</td>
+                    <td>${trip.driverName || 'N/A'}</td>
+                    <td>${trip.pickupAddress}</td>
+                    <td>${trip.pickupName}</td>
+                    <td>${trip.pickupPhone}</td>
+                    <td>${trip.dropoffAddress}</td>
+                    <td>${trip.dropoffName}</td>
+                    <td>${trip.dropoffPhone}</td>
+                    <td>${trip.numberOfPackages}</td>
+                    <td>${trip.paymentStatus}</td>
+                    <td>${trip.priority}</td>
+                    <td>${trip.status}</td>
+                    <td>${new Date(trip.tripScheduleTime).toLocaleString()}</td>
+                `;
+        
+                tripList.appendChild(tripRow);
+            });
+        }
+        var socket = io('http://localhost:3000');
+        var currentUrl = window.location.href;
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket server');
+        });
+        socket.on('logout_warning', () => {
+            localStorage.setItem('storedTheUrl', "trip.html"); 
+            socket.emit('store_url', currentUrl); 
+            window.location.href = 'logout.html';
+        });
+  
         function logout() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('No token provided, please login and try again');
+            const jwt = localStorage.getItem('jwt');
+            if (!jwt) {
+                alert('No jwt provided, please login and try again');
                 return;
             }
 
             fetch('http://localhost:3000/auth/logout', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'check': 'google'
-                }
+                    Authorization: `Bearer ${jwt}`,
+                    check: "google",
+                }                  
             })
                 .then(response => {
                     if (response.ok) {
-                        localStorage.removeItem('token');
+                        localStorage.removeItem('jwt');
                         window.location.href = 'login.html';
                     } else {
                         console.error('Logout failed');
@@ -172,18 +237,18 @@
         fetchTrips();
 
         async function fetchTrips() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                //alert('No token provided, please login and try again');
+            const jwt = localStorage.getItem('jwt');
+            if (!jwt) {
+                console.log('Your jwt is expired, please login and try again');
                 window.location.href = 'login.html';
             }
 
             const fetchOptions = {
-                method: 'get',
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'check': 'google'
-                }
+                    Authorization: `Bearer ${jwt}`,
+                    check: "google",
+                }                  
             };
 
             try {
@@ -283,7 +348,7 @@
             <td>${trip.priority}</td>
             <td>${trip.status}</td>
             <td>${new Date(trip.tripScheduleTime).toLocaleString()}</td>
-        `;
+         `;
 
                 tripList.appendChild(tripRow);
             }
@@ -305,10 +370,10 @@
             resetErrorMessages();
             const form = document.getElementById('tripForm');
 
-            // Assuming you have retrieved the token from localStorage
-            const token = localStorage.getItem('token');
-            if (!token) { 
-                //alert('No token provided, pls login and try again');
+            // Assuming you have retrieved the jwt from localStorage
+            const jwt = localStorage.getItem('jwt');
+            if (!jwt) { 
+                //alert('No jwt provided, pls login and try again');
                 window.location.href = 'login.html';
              }
             if (!form.checkValidity()) {
@@ -319,8 +384,9 @@
                 const fetchOptions = {
                     method: form.method,
                     headers: {
-                        'Authorization': `Bearer ${token}`, 'check': 'google'
-                    },
+                        Authorization: `Bearer ${jwt}`,
+                        check: "google",
+                    },                      
                     body: new URLSearchParams(formData),
                 };
 
@@ -372,12 +438,17 @@
                 }
             });
         }
-
+        ['mousemove', 'keydown', 'keyup', 'click', 'scroll', 'touchstart', 'mousedown', 'mouseup', 'keypress', 'wheel', 
+        'touchmove', 'touchend', 'resize', 'focus', 'blur', 'input'].forEach(event => {
+            document.addEventListener(event, () => {
+                socket.emit('activity');
+            });
+        });        
     </script>
 
     <!-- Include Google Maps API -->
     <script defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB0fnIA39Y5fHnKPkLhuFj1Tw0RU1tGn6s&libraries=places&callback=initMap">
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD10Map1yK3PeIVoGvzdMFIErcD3wdw0LQ&libraries=places&callback=initMap">
         </script>
     <script>
         // Google Maps initialization

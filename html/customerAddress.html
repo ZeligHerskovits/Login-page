@@ -102,20 +102,27 @@
         } else {
           const formData = new FormData(form);
           const fetchOptions = {
-            credentials: 'include', // This will include cookies in the request
-            //withCredentials: true,
             method: form.method,
-          //  headers: {
-             // Authorization: `Bearer ${jwt}`,
-             //check: "google",
-             //'Content-Type': 'application/x-www-form-urlencoded', // Ensure content type is correct for URLSearchParams
-             //Cookie: `token=${jwt}`,
-            // 'Content-Type': 'application/json',
-           // },
+            headers: {
+              Authorization: `Bearer ${jwt}`,
+              check: "google",
+            },
             body: new URLSearchParams(formData),
-            
           };
-
+               // const formData = new FormData(form);
+               // const fetchOptions = {
+               // credentials: 'include', // This will include cookies in the request
+               //withCredentials: true,
+               // method: form.method,
+               //  headers: {
+               // Authorization: `Bearer ${jwt}`,
+               //check: "google",
+               //'Content-Type': 'application/x-www-form-urlencoded', // Ensure content type is correct for URLSearchParams
+               //Cookie: `token=${jwt}`,
+               // 'Content-Type': 'application/json',
+               // },
+               // body: new URLSearchParams(formData),
+             //}; 
           try {
             const response = await fetch(form.action, fetchOptions);
             if (!response.ok) {

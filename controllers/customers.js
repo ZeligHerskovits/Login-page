@@ -157,6 +157,26 @@ exports.updateCustomer = async (req, res, next) => {
     return next(new ErrorResponse(error.message, 400));
   }
 };
+
+  // GET /customer/customer_id
+  exports.getCustomer = async (req, res, next) => {
+    try {
+      const customerId = req.params.customer_id; // Use correct param name
+      const customer = await Customer.findById(customerId); // Use Mongoose's findById()
+  
+      if (!customer) {
+        return res.status(404).json({ error: "Customer not found" });
+      }
+  
+      res.json(customer);
+    } catch (error) {
+      console.error("Error fetching customer:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+  
+
+
 //still need to test it
 exports.searchCustomers = async (req, res, next) => {
   const filter = url.parse(req.url, true).query.filter;

@@ -529,33 +529,121 @@ exports.changePassword = async (req, res, next) => {
    sendTokenResponse(user, res);
 };
 
-//POST /auth/sendInvoice
-//sendInvoice
-exports.sendInvoice = async (req, res, next) => {
-  const mailOptions = {
-    from: "zeligh4762@gmail.com",
-    to: "zeligh4762@gmail.com", //email, Its needs to be dynamic
-    subject: "Your Invoice",
-    html: `
-    <html>
-    <body>
-        <h1>Invoice</h1>
-        <p>See attached invoice</p>
-    </body>
-    </html>
-`
-  //we need to send correct data
-  };
+// const fs = require("fs");
+// const path = require("path");
+// const puppeteer = require("puppeteer");
+// const nodemailer = require("nodemailer");
 
+// exports.sendInvoice = async (req, res, next) => {
+//   try {
+//     const { customerId, customerEmail } = req.body;
+
+//     if (!customerId) {
+//       return res.status(400).json({ error: "Customer ID is required" });
+//     }
+
+//     const invoiceHtmlPath = path.join(__dirname, "../html/invoice-pdf.html");
+//     const invoiceCssPath = path.join(__dirname, "../css/invoice-pdf.css");
+
+//     // Read the CSS file
+//     const invoiceCss = fs.readFileSync(invoiceCssPath, "utf8");
+
+//     // Launch Puppeteer and create a new page
+//     const browser = await puppeteer.launch();
+//     const page = await browser.newPage();
+
+//     // Navigate to the invoice page
+//     await page.goto(`http://localhost:5500/html/invoice-pdf.html?customerId=${customerId}`, {
+//       waitUntil: "networkidle2",
+//     });
+
+//     // Inject CSS manually (Ensures CSS is applied even if external loading fails)
+//     await page.addStyleTag({ content: invoiceCss });
+
+//     // Generate PDF with proper styling
+//     const pdfPath = path.join(__dirname, `../invoices/invoice_${customerId}.pdf`);
+//     await page.pdf({ path: pdfPath, format: "A4", printBackground: true,
+//       stream: false, // Prevents usage of ReadableStream 
+//       });
+
+//     await browser.close(); // Close Puppeteer
+
+//     // Email Configuration
+//     const mailOptions = {
+//       from: "zeligh4762@gmail.com",
+//       to: customerEmail,
+//       subject: "Your Invoice",
+//       text: "Please find your invoice attached.",
+//       attachments: [
+//         {
+//           filename: `invoice_${customerId}.pdf`,
+//           path: pdfPath,
+//         },
+//       ],
+//     };
+
+//     // Send Email
+//     const emailResponse = await sendEmail(transporter, mailOptions);
+//     console.log("Email sent:", emailResponse);
+
+//     res.status(200).json({ message: "The invoice was sent successfully to the customer." });
+
+//     // Optional: Delete the PDF after sending to save storage
+//     setTimeout(() => fs.unlinkSync(pdfPath), 60000); // Delete after 1 minute
+
+//   } catch (error) {
+//     console.error("Error sending invoice:", error);
+//     res.status(500).json({ error: "Failed to send the invoice. Please try again later." });
+//   }
+// };
+
+    const fs = require("fs");
+    const path = require("path");
+
+exports.sendInvoice = async (req, res, next) => {
   try {
+    const { customerId, customerName, customerEmail, customerPhone, customerAddress } = req.body;
+
+    if (!customerId) {
+      return res.status(400).json({ error: "Customer ID is required" });
+    }
+
+    const invoiceHtmlPath = path.join(__dirname, "../html/invoice-pdf.html");
+    const invoiceCssPath = path.join(__dirname, "../css/invoice-pdf.css");
+
+    // Read HTML and CSS files
+    let invoiceHtml = fs.readFileSync(invoiceHtmlPath, "utf8");
+    let invoiceCss = fs.readFileSync(invoiceCssPath, "utf8");
+    // Embed CSS inside the HTML email
+    invoiceHtml = invoiceHtml.replace(
+      '</head>',
+      `<style>${invoiceCss}</style></head>`
+    );
+    // Replace placeholders with actual customer details
+    invoiceHtml = invoiceHtml.replace("{{customerName}}", customerName || "N/A");
+    invoiceHtml = invoiceHtml.replace("{{customerEmail}}", customerEmail || "N/A");
+    invoiceHtml = invoiceHtml.replace("{{customerPhone}}", customerPhone || "N/A");
+    invoiceHtml = invoiceHtml.replace("{{customerAddress}}", customerAddress || "N/A");
+
+    // Email configuration
+    const mailOptions = {
+      from: "zeligh4762@gmail.com",
+      to: customerEmail, // Now using dynamic email
+      subject: "Your Invoice",
+      html: invoiceHtml, // Using modified invoice HTML
+    };
+
+    // Send the email
     const emailResponse = await sendEmail(transporter, mailOptions);
-    console.log('Email sent:', emailResponse);
-    res.status(200).json({ message: 'The invoice was sent successfully to the customer.' });
+    console.log("Email sent:", emailResponse);
+
+    res.status(200).json({ message: "The invoice was sent successfully to the customer." });
   } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).json({ error: 'Failed to send the invoice. Please try again later.' });
+    console.error("Error sending email:", error);
+    res.status(500).json({ error: "Failed to send the invoice. Please try again later." });
   }
 };
+
 
 // web sockets is still in process to complet
 const WebSocket = require("ws");

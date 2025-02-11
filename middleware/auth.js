@@ -28,7 +28,7 @@ exports.checkToken = (async (req, res, next) => {
     else if (!req.headers?.check) {
         try {
            const jwt = req.cookies?.jwt;
-           if (!jwt) throw new Error('You need to enter a jwt');
+           if (!jwt) throw new Error('You need to enter a jwt, No jwt is provided');
 
             req.user = await decodeFunction(jwt);
             next();

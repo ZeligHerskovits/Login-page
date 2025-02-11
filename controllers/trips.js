@@ -28,12 +28,32 @@ exports.createTrip = async (req, res, next) => {
   }
 
   async function findAddressId(address) {
-    const addressParts = address.split(',');
-    const street = addressParts[0] ? addressParts[0].trim() : '';;
-    const city = addressParts[1] ? addressParts[1].trim() : '';
+    const abbreviations = {
+        'Avenue': 'Ave',
+        'Street': 'St',
+        'Court': 'Ct',
+        'Drive': 'Dr',
+        'Road': 'Rd'
+        // Add more abbreviations as needed
+    };
+
+    let addressParts = address.split(',');
+    let street = addressParts[0] ? addressParts[0].trim() : '';
+    let city = addressParts[1] ? addressParts[1].trim() : '';
+
+    // Replace common words with flexible abbreviations
+    for (const [full, abbr] of Object.entries(abbreviations)) {
+        street = street.replace(new RegExp(`\\b${full}\\b`, 'i'), `(${full}|${abbr})`);
+       //// street = street.replace(new RegExp(`\\b${abbr}\\b`, 'i'), `(${full}|${abbr})`);
+    }
+
+    // Add a final optional suffix pattern for common endings
+    const streetPattern = `\\s*(Ave|St|Ct|Dr|Rd)?`;
+    // const optionalSuffixPattern = `\\s*(Ave|St|Ct|Dr|Rd)?`;
+    // const streetPattern = `${street}${optionalSuffixPattern}`;
     const foundAddress = await CustomerAddress.findOne({
       $and: [
-        { 'location.street': { $regex: new RegExp(street, 'i') } },
+        { 'location.street': { $regex: new RegExp(streetPattern, 'i') } },
         { 'location.city': { $regex: new RegExp(city, 'i') } }
       ]
     });
@@ -41,15 +61,15 @@ exports.createTrip = async (req, res, next) => {
     return foundAddress ? foundAddress._doc._id.toString() : ''//next(new ErrorResponse('There is no such a address like this saved, pls create this address and try again', 500));
   }
 
-  const { pickupAddress, dropoffAddress } = req.body;
-  const pickupId = await findAddressId(pickupAddress);
-  const dropoffId = await findAddressId(dropoffAddress);
+    const { pickupAddress, dropoffAddress } = req.body;
+    const pickupId = await findAddressId(pickupAddress);
+    const dropoffId = await findAddressId(dropoffAddress);
 
   let promises = await Promise.all([
     dropoffId ? CustomerAddress.find({ _id: dropoffId }) : '',
     pickupId ? CustomerAddress.find({ _id: pickupId }) : '',
     req.body.customer && req.user.role === 'Dispatcher' ? Customer.findById(req.body.customer) : req.user.roleObject._id,
-    req.body.driver ? Driver.findById(req.body.driver) : 1
+    req.body.driver ? Driver.findById(req.body.driver) : '64246bb4bcc047fabc1edbdb'  //for now creating static driver
   ]);
 
   if (!promises[0]) {
@@ -65,12 +85,13 @@ exports.createTrip = async (req, res, next) => {
     return next(new NotFoundError('Driver', 400));
   }
 
-  const today = new Date();
-  req.body.pickupAddress = pickupId
-  req.body.dropoffAddress = dropoffId
+   const today = new Date();
+   req.body.pickupAddress = pickupId
+   req.body.dropoffAddress = dropoffId
 
   let trip = await Trip.create({
     ...req.body,
+    driver: new mongoose.Types.ObjectId(req.body.driver),
     createdByUserRole: req.user.role,
     refToCreatedBy: req.user.roleObject._id,
     tripScheduleTime: req.body.tripScheduleTime >= today ? req.body.tripScheduleTime : today,
@@ -98,8 +119,8 @@ exports.getTrip = async (req, res, next) => {
   let trip = await getTripById(req.params.trip_id);
 
   if (!trip) return next(new NotFoundError('Trip'));
-  console.log("req.user.roleObject._id.toString()......", req.user.roleObject._id.toString())
-  console.log("trip.customer._id.toString()......", trip.customer._id.toString())
+    console.log("req.user.roleObject._id.toString()......", req.user.roleObject._id.toString())
+    console.log("trip.customer._id.toString()......", trip.customer._id.toString())
   if (req.user.role === 'Customer' && req.user.roleObject._id.toString() !== trip.customer._id.toString()) {
     return next(new ErrorResponse('You are not allowed to see this trip', 400));
   }
@@ -198,17 +219,17 @@ exports.getTrips = async (req, res, next) => {
 // PUT /trip/trip_id
 exports.updateTrip = async (req, res, next) => {
 
-  allowedFields.push('status', 'paymentStatus', 'priority', 'dropoffType', 'driver');
-  const fields = checkFields(req.body, allowedFields);
-  if (fields instanceof Error) return next(fields);
+  // allowedFields.push('status', 'paymentStatus', 'priority', 'dropoffType', 'driver');
+  // const fields = checkFields(req.body, allowedFields);
+  // if (fields instanceof Error) return next(fields);
 
-  if ('status' in req.body && !allowedStatuses.includes(req.body.status))
-    return next(new ErrorResponse('Invalid status'));
+  // if ('status' in req.body && !allowedStatuses.includes(req.body.status))
+  //   return next(new ErrorResponse('Invalid status'));
 
-  if (req.user.role == 'Driver') {
-    if ('status' in req.body && driverUnallowedStatuses.includes(req.body.status))
-      return next(new ErrorResponse('Unallowed status', 401));
-  }
+  // if (req.user.role == 'Driver') {
+  //   if ('status' in req.body && driverUnallowedStatuses.includes(req.body.status))
+  //     return next(new ErrorResponse('Unallowed status', 401));
+  // }
 
   let trip = await Trip.findById(req.params.trip_id)
     .populate('driver')
@@ -240,7 +261,26 @@ exports.updateTrip = async (req, res, next) => {
   if (!promises[3]) {
     return next(ErrorResponse('Driver', 400));
   }
-
+//   if (!req.body.driverId) {
+//     return next(new ErrorResponse("Driver ID is required", 400));
+// }
+let driver;
+if (req.body.driver) {
+    // If driver ID is provided in the request body, attempt to find the driver by ID
+    var driverId = req.body.driver;
+    if (mongoose.Types.ObjectId.isValid(driverId)) {
+      driverId = new mongoose.Types.ObjectId(driverId);
+    } else {
+      return res.status(400).json({ error: "Invalid driver ID format" });
+    }
+    driver = await Driver.findById(req.body.driver);
+    if (!driver) {
+        return next(new ErrorResponse('Driver not found', 400));
+    }
+}
+driver?._id ? trip.driver = driver._id : ''; // Assign the driver ID
+    trip.status = tripStatuses.driverAssigned; // You may want to change the status to "driverAssigned" here
+    //await trip.save();
   let newStatus = req.body.driver === null || req.body.status == tripStatuses.driverCancelled ? tripStatuses['dispatched/waiting-for-driver']
     : req.body.driver && req.body.driver !== trip.driver?._id.toString() ? tripStatuses.driverAssigned
       : req.body.driver && req.body.driver === trip.driver?._id.toString() ? tripStatuses.driverAssigned
@@ -254,16 +294,33 @@ exports.updateTrip = async (req, res, next) => {
   let completedTime = (trip.status !== tripStatuses['droped-off'] && newStatus == tripStatuses['droped-off']) ? new Date(Date.now()).toISOString() : trip.completedTime || null;
   // if (req.body.tags)
   //   req.body.tags = await Tag.find({ _id: { $in: req.body.tags.map(t => t._id) } });
-
+  const toCamelCase = (str) => {
+    return str
+      .replace(/\s(.)/g, (match, p1) => p1.toUpperCase()) // Capitalize letter after space
+      .replace(/\s+/g, '') // Remove spaces
+      .replace(/^(.)/, (match) => match.toLowerCase()); // Lowercase first letter
+  };
+  
+ // const keysToRemove = new Set(["Driver", "Pickup Address", "Pickup Name", "Dropoff Address", "Dropoff Name"]);
+  
+  const cleanBody = Object.keys(req.body).reduce((acc, key) => {
+    //if (keysToRemove.has(key)) return acc; // Exclude specified keys
+    const cleanedKey = toCamelCase(key);
+    acc[cleanedKey] = req.body[key];
+    return acc;
+  }, {});
+  
   await Trip.findByIdAndUpdate(
     req.params.trip_id,
     {
-      //...req.body,
+      ...cleanBody,
+      driver: driverId,
       status: newStatus,
       completedTime,
     },
     {
       runValidators: true,
+      new: true
     }
   );
 
@@ -280,7 +337,7 @@ exports.updateTrip = async (req, res, next) => {
             timeline: { userid: req.user._id, userRole: req.user.role, updates: array },
           },
           ...(Object.keys(updateObj).length > 0 ? { $set: updateObj } : {}),
-          ...req.body
+          //...req.body ??????
         }
       );
       console.log('Trip updated successfully.');
@@ -288,7 +345,7 @@ exports.updateTrip = async (req, res, next) => {
       console.log(err)
     }
   }
-  trip = await getTripById(trip._id);
+  trip = await getTripById(req.params.trip_id);
 
   res.status(200).json(trip).end();
 };
@@ -382,7 +439,7 @@ async function timeline(updates, trip, array, updateObj) {
         array.push({ field: key, value: value });
       }
     }
-    if (!trip[key]) {
+    if (!Object.keys(trip._doc).some(docKey => docKey.replace(/\s+/g, '').toLowerCase() === key.replace(/\s+/g, '').toLowerCase())) {
       updateObj[key] = value;
       //updateObj.key = value;
     }
@@ -394,7 +451,7 @@ exports.deleteTrip = async (req, res, next) => {
   const trip = await Trip.findById(req.params.trip_id);
   if (!trip) return next(new NotFoundError('Trip'));
 
-  await Trip.deleteById(req.params.trip_id);
+  await Trip.findByIdAndDelete(req.params.trip_id);
 
   res.status(200).json({ success: true }).end();
 };
